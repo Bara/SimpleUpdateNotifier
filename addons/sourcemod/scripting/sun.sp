@@ -1,6 +1,9 @@
 #pragma semicolon 1
 #pragma newdecls required
 
+#define PLUGIN_DESCRIPTION "Checks every x seconds the server+patch versions from the steam.inf file (locally + steamdb)"
+#define PLUGIN_VERSION "1.0.0"
+
 #include <sourcemod>
 #include <SteamWorks>
 
@@ -10,8 +13,18 @@ ConVar g_cMessage = null;
 ConVar g_cAmount = null;
 ConVar g_cURL = null;
 
+public Plugin myinfo =
+{
+	name = "Simple Update Notifier",
+	author = "Bara",
+	description = PLUGIN_DESCRIPTION,
+	version = PLUGIN_VERSION,
+	url = "github.com/Bara"
+};
+
 public void OnPluginStart()
 {
+    CreateConVar("sun_version", PLUGIN_VERSION, PLUGIN_DESCRIPTION, FCVAR_NOTIFY | FCVAR_DONTRECORD | FCVAR_REPLICATED);
     g_cDebug = CreateConVar("version_debug", "0", "Enable debug mode?", _, true, 0.0, true, 1.0);
     g_cInterval = CreateConVar("version_interval", "30.0", "In which interval should we check for new updates?", _, true, 30.0);
     g_cMessage = CreateConVar("version_message", "1", "Print message into servers chat?", _, true, 0.0, true, 1.0);
