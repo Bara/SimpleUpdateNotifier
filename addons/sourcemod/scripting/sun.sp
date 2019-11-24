@@ -6,6 +6,7 @@
 
 #include <sourcemod>
 #include <SteamWorks>
+#include <autoexecconfig>
 
 ConVar g_cDebug = null;
 ConVar g_cInterval = null;
@@ -29,7 +30,7 @@ public Plugin myinfo =
 public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
 {
     g_hOnUpdate = new GlobalForward("SUN_OnUpdate", ET_Ignore, Param_Cell, Param_Cell);
-    
+
     RegPluginLibrary("sun");
 
     return APLRes_Success;
@@ -38,13 +39,17 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 public void OnPluginStart()
 {
     CreateConVar("sun_version", PLUGIN_VERSION, PLUGIN_DESCRIPTION, FCVAR_NOTIFY | FCVAR_DONTRECORD | FCVAR_REPLICATED);
-    g_cDebug = CreateConVar("version_debug", "0", "Enable debug mode?", _, true, 0.0, true, 1.0);
-    g_cInterval = CreateConVar("version_interval", "30.0", "In which interval should we check for new updates?", _, true, 30.0);
-    g_cMessage = CreateConVar("version_message", "1", "Print message into servers chat?", _, true, 0.0, true, 1.0);
-    g_cAmount = CreateConVar("version_amount", "10", "How much messages should be print?", _, true, 1.0);
-    g_cURL = CreateConVar("version_url", "https://raw.githubusercontent.com/SteamDatabase/GameTracking-CSGO/master/csgo/steam.inf", "Raw url to the steam.inf file.");
 
-    AutoExecConfig();
+    AutoExecConfig_SetCreateDirectory(true);
+    AutoExecConfig_SetCreateFile(true);
+    AutoExecConfig_SetFile("sun.core");
+    g_cDebug = AutoExecConfig_CreateConVar("sun_debug", "0", "Enable debug mode?", _, true, 0.0, true, 1.0);
+    g_cInterval = AutoExecConfig_CreateConVar("sun_interval", "30.0", "In which interval should we check for new updates?", _, true, 30.0);
+    g_cMessage = AutoExecConfig_CreateConVar("sun_message", "1", "Print message into servers chat?", _, true, 0.0, true, 1.0);
+    g_cAmount = AutoExecConfig_CreateConVar("sun_amount", "10", "How much messages should be print?", _, true, 1.0);
+    g_cURL = AutoExecConfig_CreateConVar("sun_url", "https://raw.githubusercontent.com/SteamDatabase/GameTracking-CSGO/master/csgo/steam.inf", "Raw url to the steam.inf file.");
+    AutoExecConfig_ExecuteFile();
+    AutoExecConfig_CleanFile();
 }
 
 public void OnConfigsExecuted()
