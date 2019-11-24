@@ -32,7 +32,7 @@ public void OnPluginStart()
     AutoExecConfig_SetCreateFile(true);
     AutoExecConfig_SetFile("sun.discord");
     g_cWebhook = AutoExecConfig_CreateConVar("sun_discor_webhook_url", "", "Your webhook url. Don't forget to add \"/slack\" at the end.");
-    g_cColor = AutoExecConfig_CreateConVar("sun_discord_color", "#FF69B4", "Hexcode of the color (with '#' !)");
+    g_cColor = AutoExecConfig_CreateConVar("sun_discord_color", "#7f0000", "Hexcode of the color (with '#' !)");
     g_cAvatar = AutoExecConfig_CreateConVar("sun_discord_avatar", "https://bara.dev/images/sun.png", "URL to Avatar image");
     g_cUsername = AutoExecConfig_CreateConVar("sun_discord_username", "Simple Update Notifier", "Discord username");
     AutoExecConfig_ExecuteFile();
