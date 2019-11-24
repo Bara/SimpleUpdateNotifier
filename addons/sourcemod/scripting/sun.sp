@@ -13,6 +13,10 @@ ConVar g_cMessage = null;
 ConVar g_cAmount = null;
 ConVar g_cURL = null;
 
+GlobalForward g_hOnUpdate;
+
+bool g_bSend = false;
+
 public Plugin myinfo =
 {
 	name = "Simple Update Notifier",
@@ -21,6 +25,15 @@ public Plugin myinfo =
 	version = PLUGIN_VERSION,
 	url = "github.com/Bara"
 };
+
+public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
+{
+    g_hOnUpdate = new GlobalForward("SUN_OnUpdate", ET_Ignore, Param_Cell, Param_Cell);
+    
+    RegPluginLibrary("sun");
+
+    return APLRes_Success;
+}
 
 public void OnPluginStart()
 {
@@ -37,6 +50,11 @@ public void OnPluginStart()
 public void OnConfigsExecuted()
 {
     CreateTimer(g_cInterval.FloatValue, Timer_CheckVersion, _, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
+}
+
+public void OnMapStart()
+{
+    g_bSend = false;
 }
 
 public Action Timer_CheckVersion(Handle timer)
@@ -98,6 +116,16 @@ int CheckVersions()
     else
     {
         LogMessage("Server seems to be out of date!");
+
+        if (!g_bSend)
+        {
+            Call_StartForward(g_hOnUpdate);
+            Call_PushCell(iLocalServer);
+            Call_PushCell(iSteamDBServer);
+            Call_Finish();
+        }
+
+        g_bSend = true;
 
         if (g_cMessage.BoolValue)
         {
