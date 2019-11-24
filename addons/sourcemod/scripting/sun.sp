@@ -60,6 +60,13 @@ public void OnPluginStart()
 
 public void OnConfigsExecuted()
 {
+    if (g_cDebug.BoolValue)
+    {
+        LogMessage("Sun timer started.");
+    }
+
+    g_bSend = false;
+
     CreateTimer(g_cInterval.FloatValue, Timer_CheckVersion, _, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
 }
 
@@ -70,6 +77,11 @@ public void OnMapStart()
 
 public Action Timer_CheckVersion(Handle timer)
 {
+    if (g_cDebug.BoolValue)
+    {
+        LogMessage("Timer_CheckVersion called");
+    }
+
     Download_SteamDBSteamINF();
 
     return Plugin_Continue;
@@ -79,6 +91,11 @@ void Download_SteamDBSteamINF()
 {
     char sURL[128];
     g_cURL.GetString(sURL, sizeof(sURL));
+
+    if (g_cDebug.BoolValue)
+    {
+        LogMessage("URL: %s", sURL);
+    }
 
     Handle hRequest = SteamWorks_CreateHTTPRequest(k_EHTTPMethodGET, sURL);
     SteamWorks_SetHTTPRequestHeaderValue(hRequest, "Pragma", "no-cache");
@@ -107,20 +124,26 @@ public void OnSteamWorksHTTPComplete(Handle hRequest, bool bFailure, bool bReque
 
 int CheckVersions()
 {
-    int iLocalServer = -1;
-    int iLocalPatch = -1;
-    GetLocalVersions(iLocalServer, iLocalPatch);
+    int iLocal = GetLocalVersions();
 
-    int iSteamDBServer = -1;
-    int iSteamDBPatch = -1;
-    GetSteamDBVersions(iSteamDBServer, iSteamDBPatch);
+    int iServer = GetSteamDBVersions();
 
-    if (iLocalServer == -1 || iSteamDBServer == -1)
+    if (g_cDebug.BoolValue)
+    {
+        LogMessage("Test1 - %d/%d", iLocal, iServer);
+    }
+
+    if (iLocal == -1 || iServer == -1)
     {
         return;
     }
 
-    if (iLocalServer == iSteamDBServer && iLocalPatch == iSteamDBPatch)
+    if (g_cDebug.BoolValue)
+    {
+        LogMessage("Test 2");
+    }
+
+    if (iLocal == iServer)
     {
         LogMessage("Server seems to be up to date.");
     }
@@ -131,8 +154,8 @@ int CheckVersions()
         if (!g_bSend)
         {
             Call_StartForward(g_hOnUpdate);
-            Call_PushCell(iLocalServer);
-            Call_PushCell(iSteamDBServer);
+            Call_PushCell(iLocal);
+            Call_PushCell(iServer);
             Call_Finish();
         }
 
@@ -142,7 +165,7 @@ int CheckVersions()
         {
             for (int i = 1; i <= g_cAmount.IntValue; i++)
             {
-                PrintToChatAll("This server seems to be out of date! Local Version: %d (Patch: %d), SteamDB Version: %d (Patch: %d)", iLocalServer, iLocalPatch, iSteamDBServer, iSteamDBPatch);
+                PrintToChatAll("This server seems to be out of date! Local Version: %d, SteamDB Version: %d", iLocal, iServer);
             }
         }
 
@@ -163,102 +186,84 @@ public Action Timer_RestartServer(Handle timer)
     ServerCommand("_restart");
 }
 
-void GetLocalVersions(int iLocalServer, int iLocalPatch)
+int GetLocalVersions()
 {
     File fiLocal = OpenFile("steam.inf", "r");
 
     if (fiLocal == null)
     {
         SetFailState("Can't read steam.inf file!");
-        return;
+        return -1;
     }
 
-    char sLocalLine[48];
-    char sLocalServer[48];
-    char sLocalPatch[48];
+    char sLine[48];
+    char sLocal[48];
 
-    while (!fiLocal.EndOfFile() && fiLocal.ReadLine(sLocalLine, sizeof(sLocalLine)))
+    while (!fiLocal.EndOfFile() && fiLocal.ReadLine(sLine, sizeof(sLine)))
     {
-        if (strlen(sLocalLine) > 1)
+        if (strlen(sLine) > 1)
         {
-            if (StrContains(sLocalLine, "PatchVersion" ,false) != -1)
+            if (StrContains(sLine, "ServerVersion" ,false) != -1)
             {
-                ReplaceString(sLocalLine, sizeof(sLocalLine), "PatchVersion=", "");
-                ReplaceString(sLocalLine, sizeof(sLocalLine), ".", "");
+                ReplaceString(sLine, sizeof(sLine), "ServerVersion=", "");
+                TrimString(sLine);
 
-                TrimString(sLocalLine);
+                strcopy(sLocal, sizeof(sLocal), sLine);
 
-                strcopy(sLocalPatch, sizeof(sLocalPatch), sLocalLine);
-            }
-            else if (StrContains(sLocalLine, "ServerVersion" ,false) != -1)
-            {
-                ReplaceString(sLocalLine, sizeof(sLocalLine), "ServerVersion=", "");
-
-                TrimString(sLocalLine);
-
-                strcopy(sLocalServer, sizeof(sLocalServer), sLocalLine);
+                break;
             }
         }
     }
 
     delete fiLocal;
 
-    iLocalServer = StringToInt(sLocalServer);
-    iLocalPatch = StringToInt(sLocalPatch);
+    int iLocal = StringToInt(sLocal);
 
     if (g_cDebug.BoolValue)
     {
-        LogMessage("[Local] ServerVersion: %d (String: %s)", iLocalServer, sLocalServer);
-        LogMessage("[Local] PatchVersion: %d (String: %s)", iLocalPatch, sLocalPatch);
+        LogMessage("[Local] ServerVersion: %d (String: %s)", iLocal, sLocal);
     }
+
+    return iLocal;
 }
 
-void GetSteamDBVersions(int iSteamDBServer, int iSteamDBPatch)
+int GetSteamDBVersions()
 {
     File fiSteamDB = OpenFile("steamdb_steam.inf", "r");
 
     if (fiSteamDB == null)
     {
         SetFailState("Can't read steamdb_steam.inf file!");
-        return;
+        return -1;
     }
 
-    char sSteamDBLine[48];
-    char sSteamDBServer[48];
-    char sSteamDBPatch[48];
+    char sLine[48];
+    char sServer[48];
 
-    while (!fiSteamDB.EndOfFile() && fiSteamDB.ReadLine(sSteamDBLine, sizeof(sSteamDBLine)))
+    while (!fiSteamDB.EndOfFile() && fiSteamDB.ReadLine(sLine, sizeof(sLine)))
     {
-        if (strlen(sSteamDBLine) > 1)
+        if (strlen(sLine) > 1)
         {
-            if (StrContains(sSteamDBLine, "PatchVersion" ,false) != -1)
+            if (StrContains(sLine, "ServerVersion" ,false) != -1)
             {
-                ReplaceString(sSteamDBLine, sizeof(sSteamDBLine), "PatchVersion=", "");
-                ReplaceString(sSteamDBLine, sizeof(sSteamDBLine), ".", "");
+                ReplaceString(sLine, sizeof(sLine), "ServerVersion=", "");
+                TrimString(sLine);
 
-                TrimString(sSteamDBLine);
+                strcopy(sServer, sizeof(sServer), sLine);
 
-                strcopy(sSteamDBPatch, sizeof(sSteamDBPatch), sSteamDBLine);
-            }
-            else if (StrContains(sSteamDBLine, "ServerVersion" ,false) != -1)
-            {
-                ReplaceString(sSteamDBLine, sizeof(sSteamDBLine), "ServerVersion=", "");
-
-                TrimString(sSteamDBLine);
-
-                strcopy(sSteamDBServer, sizeof(sSteamDBServer), sSteamDBLine);
+                break;
             }
         }
     }
 
     delete fiSteamDB;
 
-    iSteamDBServer = StringToInt(sSteamDBServer);
-    iSteamDBPatch = StringToInt(sSteamDBPatch);
+    int iServer = StringToInt(sServer);
 
     if (g_cDebug.BoolValue)
     {
-        LogMessage("[SteamDB] ServerVersion: %d (String: %s)", iSteamDBServer, sSteamDBServer);
-        LogMessage("[SteamDB] PatchVersion: %d (String: %s)", iSteamDBPatch, sSteamDBPatch);
+        LogMessage("[SteamDB] ServerVersion: %d (String: %s)", iServer, sServer);
     }
+
+    return iServer;
 }

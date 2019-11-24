@@ -14,7 +14,7 @@ ConVar g_cWebhook = null;
 ConVar g_cColor = null;
 ConVar g_cAvatar = null;
 ConVar g_cUsername = null;
-
+ConVar g_cDebug = null;
 public Plugin myinfo =
 {
 	name = "Simple Update Notifier - Discord",
@@ -39,8 +39,18 @@ public void OnPluginStart()
     AutoExecConfig_CleanFile();
 }
 
+public void OnConfigsExecuted()
+{
+    g_cDebug = FindConVar("sun_debug");
+}
+
 public void SUN_OnUpdate(int iLocalVersion, int iSteamVersion)
 {
+    if (g_cDebug != null && g_cDebug.BoolValue)
+    {
+        LogMessage("SUN_OnUpdate called!");
+    }
+
     char sHostname[512];
     ConVar cHostname = FindConVar("hostname");
 
@@ -54,7 +64,7 @@ public void SUN_OnUpdate(int iLocalVersion, int iSteamVersion)
     char sName[128];
     g_cUsername.GetString(sName, sizeof(sName));
 
-    char sHook[128];
+    char sHook[256];
     g_cWebhook.GetString(sHook, sizeof(sHook));
 
     DiscordWebHook hook = new DiscordWebHook(sHook);
