@@ -13,6 +13,9 @@ ConVar g_cInterval = null;
 ConVar g_cMessage = null;
 ConVar g_cAmount = null;
 ConVar g_cURL = null;
+ConVar g_cRestart = null;
+ConVar g_cRestartMessage = null;
+ConVar g_cDelay = null;
 
 GlobalForward g_hOnUpdate;
 
@@ -48,6 +51,9 @@ public void OnPluginStart()
     g_cMessage = AutoExecConfig_CreateConVar("sun_message", "1", "Print message into servers chat?", _, true, 0.0, true, 1.0);
     g_cAmount = AutoExecConfig_CreateConVar("sun_amount", "10", "How much messages should be print?", _, true, 1.0);
     g_cURL = AutoExecConfig_CreateConVar("sun_url", "https://raw.githubusercontent.com/SteamDatabase/GameTracking-CSGO/master/csgo/steam.inf", "Raw url to the steam.inf file.");
+    g_cRestart = AutoExecConfig_CreateConVar("sun_restart", "0", "Restart server on update?", _, true, 0.0, true, 1.0);
+    g_cRestartMessage = AutoExecConfig_CreateConVar("sun_restart_message", "0", "Print message when restart is planned? sun_restart must be 1", _, true, 0.0, true, 1.0);
+    g_cDelay = AutoExecConfig_CreateConVar("sun_delay", "5.0", "After how much seconds restart the server?", _, true, 0.0);
     AutoExecConfig_ExecuteFile();
     AutoExecConfig_CleanFile();
 }
@@ -139,7 +145,22 @@ int CheckVersions()
                 PrintToChatAll("This server seems to be out of date! Local Version: %d (Patch: %d), SteamDB Version: %d (Patch: %d)", iLocalServer, iLocalPatch, iSteamDBServer, iSteamDBPatch);
             }
         }
+
+        if (g_cRestart.BoolValue)
+        {
+            if (g_cRestartMessage.BoolValue)
+            {
+                PrintToChatAll("Server will be restarting in %.0f seconds...", g_cDelay.FloatValue);
+            }
+
+            CreateTimer(g_cDelay.FloatValue, Timer_RestartServer);
+        }
     }
+}
+
+public Action Timer_RestartServer(Handle timer)
+{
+    ServerCommand("_restart");
 }
 
 void GetLocalVersions(int iLocalServer, int iLocalPatch)
