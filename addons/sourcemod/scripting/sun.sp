@@ -313,7 +313,12 @@ bool CheckPercent()
         g_cMaxVisible = FindConVar("sv_visiblemaxplayers");
     }
 
-    int iSlots = g_cMaxVisible.IntValue;
+    int iSlots = -1;
+
+    if (g_cMaxVisible != null)
+    {
+        iSlots = g_cMaxVisible.IntValue;
+    }
 
     if (iSlots == -1)
     {
