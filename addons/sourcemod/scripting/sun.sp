@@ -16,7 +16,10 @@ ConVar g_cURL = null;
 ConVar g_cRestart = null;
 ConVar g_cRestartMessage = null;
 ConVar g_cRestartPlayers = null;
+ConVar g_cRestartPercent = null;
 ConVar g_cDelay = null;
+
+ConVar g_cMaxVisible = null;
 
 GlobalForward g_hOnUpdate;
 
@@ -48,13 +51,14 @@ public void OnPluginStart()
     AutoExecConfig_SetCreateFile(true);
     AutoExecConfig_SetFile("sun.core");
     g_cDebug = AutoExecConfig_CreateConVar("sun_debug", "0", "Enable debug mode?", _, true, 0.0, true, 1.0);
-    g_cInterval = AutoExecConfig_CreateConVar("sun_interval", "300", "In which interval should we check for new updates?", _, true, 30.0);
+    g_cInterval = AutoExecConfig_CreateConVar("sun_interval", "300", "In which interval should we check for new updates?", _, true, 60.0);
     g_cMessage = AutoExecConfig_CreateConVar("sun_message", "1", "Print message into servers chat?", _, true, 0.0, true, 1.0);
     g_cAmount = AutoExecConfig_CreateConVar("sun_amount", "10", "How much messages should be print?", _, true, 1.0);
     g_cURL = AutoExecConfig_CreateConVar("sun_url", "https://raw.githubusercontent.com/SteamDatabase/GameTracking-CSGO/master/csgo/steam.inf", "Raw url to the steam.inf file.");
     g_cRestart = AutoExecConfig_CreateConVar("sun_restart", "0", "Restart server on update?", _, true, 0.0, true, 1.0);
     g_cRestartMessage = AutoExecConfig_CreateConVar("sun_restart_message", "0", "Print message when restart is planned? sun_restart must be 1", _, true, 0.0, true, 1.0);
     g_cRestartPlayers = AutoExecConfig_CreateConVar("sun_restart_players", "-1", "Restart the server with a amount of X players or less. (-1 to disable this feature)", _, true, -1.0);
+    g_cRestartPercent = AutoExecConfig_CreateConVar("sun_restart_percent", "0", "Restart the server with a amount of X% players or less. (0 to disable this feature)", _, true, 0.0);
     g_cDelay = AutoExecConfig_CreateConVar("sun_delay", "5.0", "After how much seconds restart the server?", _, true, 0.0);
     AutoExecConfig_ExecuteFile();
     AutoExecConfig_CleanFile();
@@ -70,6 +74,8 @@ public void OnConfigsExecuted()
     g_bSend = false;
 
     CreateTimer(g_cInterval.FloatValue, Timer_CheckVersion, _, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
+
+    g_cMaxVisible = FindConVar("sv_visiblemaxplayers");
 }
 
 public void OnMapStart()
@@ -171,7 +177,7 @@ int CheckVersions()
             }
         }
 
-        if (g_cRestart.BoolValue && CheckPlayers())
+        if (g_cRestart.BoolValue && CheckPlayers() && CheckPercent())
         {
             if (g_cRestartMessage.BoolValue)
             {
@@ -288,6 +294,45 @@ bool CheckPlayers()
     }
 
     if (iCount < g_cRestartPlayers.IntValue)
+    {
+        return false;
+    }
+
+    return true;
+}
+
+bool CheckPercent()
+{
+    if (g_cRestartPercent.IntValue == 0)
+    {
+        return true;
+    }
+
+    if (g_cMaxVisible == null)
+    {
+        g_cMaxVisible = FindConVar("sv_visiblemaxplayers");
+    }
+
+    int iSlots = g_cMaxVisible.IntValue;
+
+    if (iSlots == -1)
+    {
+        iSlots = GetMaxHumanPlayers();
+    }
+    
+    int iCount = 0;
+
+    for (int i = 1; i <= MaxClients; i++)
+    {
+        if (IsClientInGame(i) && !IsFakeClient(i) && !IsClientSourceTV(i))
+        {
+            iCount++;
+        }
+    }
+
+    int iPercent = iCount / iSlots * 100;
+
+    if (iPercent > g_cRestartPercent.IntValue)
     {
         return false;
     }
