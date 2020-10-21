@@ -211,9 +211,10 @@ int GetLocalVersions()
     {
         if (strlen(sLine) > 1)
         {
-            if (StrContains(sLine, "ServerVersion" ,false) != -1)
+            if (StrContains(sLine, "PatchVersion" ,false) != -1)
             {
-                ReplaceString(sLine, sizeof(sLine), "ServerVersion=", "");
+                ReplaceString(sLine, sizeof(sLine), "PatchVersion=", "");
+                ReplaceString(sLine, sizeof(sLine), ".", "");
                 TrimString(sLine);
 
                 strcopy(sLocal, sizeof(sLocal), sLine);
@@ -229,7 +230,7 @@ int GetLocalVersions()
 
     if (g_cDebug.BoolValue)
     {
-        LogMessage("[Local] ServerVersion: %d (String: %s)", iLocal, sLocal);
+        LogMessage("[Local] PatchVersion: %d (String: %s)", iLocal, sLocal);
     }
 
     return iLocal;
@@ -252,9 +253,10 @@ int GetSteamDBVersions()
     {
         if (strlen(sLine) > 1)
         {
-            if (StrContains(sLine, "ServerVersion" ,false) != -1)
+            if (StrContains(sLine, "PatchVersion" ,false) != -1)
             {
-                ReplaceString(sLine, sizeof(sLine), "ServerVersion=", "");
+                ReplaceString(sLine, sizeof(sLine), "PatchVersion=", "");
+                ReplaceString(sLine, sizeof(sLine), ".", "");
                 TrimString(sLine);
 
                 strcopy(sServer, sizeof(sServer), sLine);
@@ -270,7 +272,7 @@ int GetSteamDBVersions()
 
     if (g_cDebug.BoolValue)
     {
-        LogMessage("[SteamDB] ServerVersion: %d (String: %s)", iServer, sServer);
+        LogMessage("[SteamDB] PatchVersion: %d (String: %s)", iServer, sServer);
     }
 
     return iServer;
