@@ -295,7 +295,7 @@ bool CheckPlayers()
         }
     }
 
-    if (iCount < g_cRestartPlayers.IntValue)
+    if (iCount > g_cRestartPlayers.IntValue)
     {
         return false;
     }
