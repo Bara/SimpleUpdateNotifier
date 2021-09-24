@@ -8,22 +8,26 @@
 #include <SteamWorks>
 #include <autoexecconfig>
 
-ConVar g_cDebug = null;
-ConVar g_cInterval = null;
-ConVar g_cMessage = null;
-ConVar g_cAmount = null;
-ConVar g_cURL = null;
-ConVar g_cRestart = null;
-ConVar g_cRestartMessage = null;
-ConVar g_cRestartPlayers = null;
-ConVar g_cRestartPercent = null;
-ConVar g_cDelay = null;
+enum struct Global
+{
+    ConVar Debug;
+    ConVar Interval;
+    ConVar Message;
+    ConVar Amount;
+    ConVar URL;
+    ConVar Restart;
+    ConVar RestartMessage;
+    ConVar RestartPlayers;
+    ConVar RestartPercent;
+    ConVar Delay;
+    ConVar MaxVisible;
 
-ConVar g_cMaxVisible = null;
+    GlobalForward OnUpdate;
 
-GlobalForward g_hOnUpdate;
+    bool Send;
+}
 
-bool g_bSend = false;
+Global Core;
 
 public Plugin myinfo =
 {
@@ -36,7 +40,7 @@ public Plugin myinfo =
 
 public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
 {
-    g_hOnUpdate = new GlobalForward("SUN_OnUpdate", ET_Ignore, Param_Cell, Param_Cell);
+    Core.OnUpdate = new GlobalForward("SUN_OnUpdate", ET_Ignore, Param_Cell, Param_Cell);
 
     RegPluginLibrary("sun");
 
@@ -50,42 +54,42 @@ public void OnPluginStart()
     AutoExecConfig_SetCreateDirectory(true);
     AutoExecConfig_SetCreateFile(true);
     AutoExecConfig_SetFile("sun.core");
-    g_cDebug = AutoExecConfig_CreateConVar("sun_debug", "0", "Enable debug mode?", _, true, 0.0, true, 1.0);
-    g_cInterval = AutoExecConfig_CreateConVar("sun_interval", "300", "In which interval should we check for new updates?", _, true, 60.0);
-    g_cMessage = AutoExecConfig_CreateConVar("sun_message", "1", "Print message into servers chat?", _, true, 0.0, true, 1.0);
-    g_cAmount = AutoExecConfig_CreateConVar("sun_amount", "10", "How much messages should be print?", _, true, 1.0);
-    g_cURL = AutoExecConfig_CreateConVar("sun_url", "https://raw.githubusercontent.com/SteamDatabase/GameTracking-CSGO/master/csgo/steam.inf", "Raw url to the steam.inf file.");
-    g_cRestart = AutoExecConfig_CreateConVar("sun_restart", "0", "Restart server on update?", _, true, 0.0, true, 1.0);
-    g_cRestartMessage = AutoExecConfig_CreateConVar("sun_restart_message", "0", "Print message when restart is planned? sun_restart must be 1", _, true, 0.0, true, 1.0);
-    g_cRestartPlayers = AutoExecConfig_CreateConVar("sun_restart_players", "-1", "Restart the server with a amount of X players or less. (-1 to disable this feature)", _, true, -1.0);
-    g_cRestartPercent = AutoExecConfig_CreateConVar("sun_restart_percent", "0", "Restart the server with a amount of X% players or less. (0 to disable this feature)", _, true, 0.0);
-    g_cDelay = AutoExecConfig_CreateConVar("sun_delay", "5.0", "After how much seconds restart the server?", _, true, 0.0);
+    Core.Debug = AutoExecConfig_CreateConVar("sun_debug", "0", "Enable debug mode?", _, true, 0.0, true, 1.0);
+    Core.Interval = AutoExecConfig_CreateConVar("sun_interval", "300", "In which interval should we check for new updates?", _, true, 60.0);
+    Core.Message = AutoExecConfig_CreateConVar("sun_message", "1", "Print message into servers chat?", _, true, 0.0, true, 1.0);
+    Core.Amount = AutoExecConfig_CreateConVar("sun_amount", "10", "How much messages should be print?", _, true, 1.0);
+    Core.URL = AutoExecConfig_CreateConVar("sun_url", "https://raw.githubusercontent.com/SteamDatabase/GameTracking-CSGO/master/csgo/steam.inf", "Raw url to the steam.inf file.");
+    Core.Restart = AutoExecConfig_CreateConVar("sun_restart", "0", "Restart server on update?", _, true, 0.0, true, 1.0);
+    Core.RestartMessage = AutoExecConfig_CreateConVar("sun_restart_message", "0", "Print message when restart is planned? sun_restart must be 1", _, true, 0.0, true, 1.0);
+    Core.RestartPlayers = AutoExecConfig_CreateConVar("sun_restart_players", "-1", "Restart the server with a amount of X players or less. (-1 to disable this feature)", _, true, -1.0);
+    Core.RestartPercent = AutoExecConfig_CreateConVar("sun_restart_percent", "0", "Restart the server with a amount of X% players or less. (0 to disable this feature)", _, true, 0.0);
+    Core.Delay = AutoExecConfig_CreateConVar("sun_delay", "5.0", "After how much seconds restart the server?", _, true, 0.0);
     AutoExecConfig_ExecuteFile();
     AutoExecConfig_CleanFile();
 }
 
 public void OnConfigsExecuted()
 {
-    if (g_cDebug.BoolValue)
+    if (Core.Debug.BoolValue)
     {
         LogMessage("Sun timer started.");
     }
 
-    g_bSend = false;
+    Core.Send = false;
 
-    CreateTimer(g_cInterval.FloatValue, Timer_CheckVersion, _, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
+    CreateTimer(Core.Interval.FloatValue, Timer_CheckVersion, _, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
 
-    g_cMaxVisible = FindConVar("sv_visiblemaxplayers");
+    Core.MaxVisible = FindConVar("sv_visiblemaxplayers");
 }
 
 public void OnMapStart()
 {
-    g_bSend = false;
+    Core.Send = false;
 }
 
 public Action Timer_CheckVersion(Handle timer)
 {
-    if (g_cDebug.BoolValue)
+    if (Core.Debug.BoolValue)
     {
         LogMessage("Timer_CheckVersion called");
     }
@@ -98,9 +102,9 @@ public Action Timer_CheckVersion(Handle timer)
 void Download_SteamDBSteamINF()
 {
     char sURL[128];
-    g_cURL.GetString(sURL, sizeof(sURL));
+    Core.URL.GetString(sURL, sizeof(sURL));
 
-    if (g_cDebug.BoolValue)
+    if (Core.Debug.BoolValue)
     {
         LogMessage("URL: %s", sURL);
     }
@@ -124,7 +128,7 @@ public void OnSteamWorksHTTPComplete(Handle hRequest, bool bFailure, bool bReque
     }
     else
     {
-        SetFailState("SteamWorks error (status code %i). Request successful: %s", eStatusCode, bRequestSuccessful);
+        SetFailState("SteamWorks error. StatusCode %d RequestSuccessful: %d, Failure: %d", eStatusCode, bRequestSuccessful, bFailure);
     }
     
     delete hRequest;
@@ -136,7 +140,7 @@ int CheckVersions()
 
     int iServer = GetSteamDBVersions();
 
-    if (g_cDebug.BoolValue)
+    if (Core.Debug.BoolValue)
     {
         LogMessage("Test1 - %d/%d", iLocal, iServer);
     }
@@ -146,7 +150,7 @@ int CheckVersions()
         return;
     }
 
-    if (g_cDebug.BoolValue)
+    if (Core.Debug.BoolValue)
     {
         LogMessage("Test 2");
     }
@@ -159,32 +163,32 @@ int CheckVersions()
     {
         LogMessage("Server seems to be out of date!");
 
-        if (!g_bSend)
+        if (!Core.Send)
         {
-            Call_StartForward(g_hOnUpdate);
+            Call_StartForward(Core.OnUpdate);
             Call_PushCell(iLocal);
             Call_PushCell(iServer);
             Call_Finish();
         }
 
-        g_bSend = true;
+        Core.Send = true;
 
-        if (g_cMessage.BoolValue)
+        if (Core.Message.BoolValue)
         {
-            for (int i = 1; i <= g_cAmount.IntValue; i++)
+            for (int i = 1; i <= Core.Amount.IntValue; i++)
             {
                 PrintToChatAll("This server seems to be out of date! Local Version: %d, SteamDB Version: %d", iLocal, iServer);
             }
         }
 
-        if (g_cRestart.BoolValue && CheckPlayers() && CheckPercent())
+        if (Core.Restart.BoolValue && CheckPlayers() && CheckPercent())
         {
-            if (g_cRestartMessage.BoolValue)
+            if (Core.RestartMessage.BoolValue)
             {
-                PrintToChatAll("Server will be restarting in %.0f seconds...", g_cDelay.FloatValue);
+                PrintToChatAll("Server will be restarting in %.0f seconds...", Core.Delay.FloatValue);
             }
 
-            CreateTimer(g_cDelay.FloatValue, Timer_RestartServer);
+            CreateTimer(Core.Delay.FloatValue, Timer_RestartServer);
         }
     }
 }
@@ -228,7 +232,7 @@ int GetLocalVersions()
 
     int iLocal = StringToInt(sLocal);
 
-    if (g_cDebug.BoolValue)
+    if (Core.Debug.BoolValue)
     {
         LogMessage("[Local] PatchVersion: %d (String: %s)", iLocal, sLocal);
     }
@@ -270,7 +274,7 @@ int GetSteamDBVersions()
 
     int iServer = StringToInt(sServer);
 
-    if (g_cDebug.BoolValue)
+    if (Core.Debug.BoolValue)
     {
         LogMessage("[SteamDB] PatchVersion: %d (String: %s)", iServer, sServer);
     }
@@ -280,7 +284,7 @@ int GetSteamDBVersions()
 
 bool CheckPlayers()
 {
-    if (g_cRestartPlayers.IntValue < 0)
+    if (Core.RestartPlayers.IntValue < 0)
     {
         return true;
     }
@@ -295,7 +299,7 @@ bool CheckPlayers()
         }
     }
 
-    if (iCount > g_cRestartPlayers.IntValue)
+    if (iCount > Core.RestartPlayers.IntValue)
     {
         return false;
     }
@@ -305,21 +309,21 @@ bool CheckPlayers()
 
 bool CheckPercent()
 {
-    if (g_cRestartPercent.IntValue == 0)
+    if (Core.RestartPercent.IntValue == 0)
     {
         return true;
     }
 
-    if (g_cMaxVisible == null)
+    if (Core.MaxVisible == null)
     {
-        g_cMaxVisible = FindConVar("sv_visiblemaxplayers");
+        Core.MaxVisible = FindConVar("sv_visiblemaxplayers");
     }
 
     int iSlots = -1;
 
-    if (g_cMaxVisible != null)
+    if (Core.MaxVisible != null)
     {
-        iSlots = g_cMaxVisible.IntValue;
+        iSlots = Core.MaxVisible.IntValue;
     }
 
     if (iSlots == -1)
@@ -339,7 +343,7 @@ bool CheckPercent()
 
     int iPercent = iCount / iSlots * 100;
 
-    if (iPercent > g_cRestartPercent.IntValue)
+    if (iPercent > Core.RestartPercent.IntValue)
     {
         return false;
     }

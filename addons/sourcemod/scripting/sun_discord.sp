@@ -10,11 +10,16 @@
 
 #pragma newdecls required
 
-ConVar g_cWebhook = null;
-ConVar g_cColor = null;
-ConVar g_cAvatar = null;
-ConVar g_cUsername = null;
-ConVar g_cDebug = null;
+enum struct Global
+{
+    ConVar Webhook;
+    ConVar Color;
+    ConVar Avatar;
+    ConVar Username;
+    ConVar Debug;
+}
+Global Core;
+
 public Plugin myinfo =
 {
 	name = "Simple Update Notifier - Discord",
@@ -31,22 +36,22 @@ public void OnPluginStart()
     AutoExecConfig_SetCreateDirectory(true);
     AutoExecConfig_SetCreateFile(true);
     AutoExecConfig_SetFile("sun.discord");
-    g_cWebhook = AutoExecConfig_CreateConVar("sun_discor_webhook_url", "", "Your webhook url. Don't forget to add \"/slack\" at the end.");
-    g_cColor = AutoExecConfig_CreateConVar("sun_discord_color", "#7f0000", "Hexcode of the color (with '#' !)");
-    g_cAvatar = AutoExecConfig_CreateConVar("sun_discord_avatar", "https://bara.dev/images/sun.png", "URL to Avatar image");
-    g_cUsername = AutoExecConfig_CreateConVar("sun_discord_username", "Simple Update Notifier", "Discord username");
+    Core.Webhook = AutoExecConfig_CreateConVar("sun_discor_webhook_url", "", "Your webhook url. Don't forget to add \"/slack\" at the end.");
+    Core.Color = AutoExecConfig_CreateConVar("sun_discord_color", "#7f0000", "Hexcode of the color (with '#' !)");
+    Core.Avatar = AutoExecConfig_CreateConVar("sun_discord_avatar", "https://bara.dev/images/sun.png", "URL to Avatar image");
+    Core.Username = AutoExecConfig_CreateConVar("sun_discord_username", "Simple Update Notifier", "Discord username");
     AutoExecConfig_ExecuteFile();
     AutoExecConfig_CleanFile();
 }
 
 public void OnConfigsExecuted()
 {
-    g_cDebug = FindConVar("sun_debug");
+    Core.Debug = FindConVar("sun_debug");
 }
 
 public void SUN_OnUpdate(int iLocalVersion, int iSteamVersion)
 {
-    if (g_cDebug != null && g_cDebug.BoolValue)
+    if (Core.Debug != null && Core.Debug.BoolValue)
     {
         LogMessage("SUN_OnUpdate called!");
     }
@@ -62,18 +67,18 @@ public void SUN_OnUpdate(int iLocalVersion, int iSteamVersion)
     cHostname.GetString(sHostname, sizeof(sHostname));
     
     char sName[128];
-    g_cUsername.GetString(sName, sizeof(sName));
+    Core.Username.GetString(sName, sizeof(sName));
 
     char sHook[256];
-    g_cWebhook.GetString(sHook, sizeof(sHook));
+    Core.Webhook.GetString(sHook, sizeof(sHook));
 
     DiscordWebHook hook = new DiscordWebHook(sHook);
     hook.SlackMode = true;
     hook.SetUsername(sName);
 
     char sColor[12], sAvatar[512];
-    g_cColor.GetString(sColor, sizeof(sColor));
-    g_cAvatar.GetString(sAvatar, sizeof(sAvatar));
+    Core.Color.GetString(sColor, sizeof(sColor));
+    Core.Avatar.GetString(sAvatar, sizeof(sAvatar));
 
     char sLocal[16], sSteamDB[16];
     IntToString(iLocalVersion, sLocal, sizeof(sLocal));
