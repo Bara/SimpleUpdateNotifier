@@ -5,7 +5,7 @@
 
 #include <sourcemod>
 #include <autoexecconfig>
-#include <discord>
+#include <discordEmbedAPI>
 #include <sun>
 
 #pragma newdecls required
@@ -22,11 +22,11 @@ Global Core;
 
 public Plugin myinfo =
 {
-	name = "Simple Update Notifier - Discord",
-	author = "Bara",
-	description = PLUGIN_DESCRIPTION,
-	version = PLUGIN_VERSION,
-	url = "github.com/Bara"
+    name = "Simple Update Notifier - Discord",
+    author = "Bara",
+    description = PLUGIN_DESCRIPTION,
+    version = PLUGIN_VERSION,
+    url = "github.com/Bara"
 };
 
 public void OnPluginStart()
@@ -36,8 +36,8 @@ public void OnPluginStart()
     AutoExecConfig_SetCreateDirectory(true);
     AutoExecConfig_SetCreateFile(true);
     AutoExecConfig_SetFile("sun.discord");
-    Core.Webhook = AutoExecConfig_CreateConVar("sun_discor_webhook_url", "", "Your webhook url. Don't forget to add \"/slack\" at the end.");
-    Core.Color = AutoExecConfig_CreateConVar("sun_discord_color", "#7f0000", "Hexcode of the color (with '#' !)");
+    Core.Webhook = AutoExecConfig_CreateConVar("sun_discor_webhook_url", "", "Your webhook url. Don't forget to add \"/slack\" at the end.", FCVAR_PROTECTED);
+    Core.Color = AutoExecConfig_CreateConVar("sun_discord_color", "8323072", "Hexcode of the color (with '#' !)");
     Core.Avatar = AutoExecConfig_CreateConVar("sun_discord_avatar", "https://bara.dev/images/sun.png", "URL to Avatar image");
     Core.Username = AutoExecConfig_CreateConVar("sun_discord_username", "Simple Update Notifier", "Discord username");
     AutoExecConfig_ExecuteFile();
@@ -56,7 +56,6 @@ public void SUN_OnUpdate(int iLocalVersion, int iSteamVersion)
         LogMessage("SUN_OnUpdate called!");
     }
 
-    char sHostname[512];
     ConVar cHostname = FindConVar("hostname");
 
     if (cHostname == null)
@@ -64,35 +63,51 @@ public void SUN_OnUpdate(int iLocalVersion, int iSteamVersion)
         return;
     }
 
-    cHostname.GetString(sHostname, sizeof(sHostname));
+    Webhook webhook = new Webhook();
     
     char sName[128];
     Core.Username.GetString(sName, sizeof(sName));
+    webhook.SetUsername(sName);
 
-    char sHook[256];
-    Core.Webhook.GetString(sHook, sizeof(sHook));
-
-    DiscordWebHook hook = new DiscordWebHook(sHook);
-    hook.SlackMode = true;
-    hook.SetUsername(sName);
-
-    char sColor[12], sAvatar[512];
-    Core.Color.GetString(sColor, sizeof(sColor));
+    char sAvatar[512];
     Core.Avatar.GetString(sAvatar, sizeof(sAvatar));
+    webhook.SetAvatarURL(sAvatar);
 
     char sLocal[16], sSteamDB[16];
     IntToString(iLocalVersion, sLocal, sizeof(sLocal));
     IntToString(iSteamVersion, sSteamDB, sizeof(sLocal));
 
-    MessageEmbed Embed = new MessageEmbed();
-    Embed.SetColor(sColor);
-    Embed.SetTitle(sHostname);
-    Embed.SetAuthorIcon(sAvatar);
-    Embed.AddField("Current Version:", sLocal, true);
-    Embed.AddField("New Version:", sSteamDB, true);
+    char sHostname[512];
+    cHostname.GetString(sHostname, sizeof(sHostname));
 
-    hook.Embed(Embed);
-    hook.Send();
+    Embed embed = new Embed();
+    embed.SetColor(Core.Color.IntValue);
+    embed.SetTitle(sHostname);
+    embed.SetDescription("Server is out of date");
+    
+    EmbedField eServerVersion = new EmbedField();
+    eServerVersion.SetName("Current Version");
+    eServerVersion.SetValue(sLocal);
+    eServerVersion.SetInline(true);
 
-    delete hook;
+    EmbedField eValveVersion = new EmbedField();
+    eValveVersion.SetName("New Version");
+    eValveVersion.SetValue(sSteamDB);
+    eValveVersion.SetInline(true);
+    
+    embed.AddField(eServerVersion);
+    embed.AddField(eValveVersion);
+
+    char sHook[256];
+    Core.Webhook.GetString(sHook, sizeof(sHook));
+    webhook.Execute(sHook, OnWebHookExecuted);
+}
+
+public void OnWebHookExecuted(HTTPResponse response, DataPack pack)
+{
+    if (response.Status != HTTPStatus_NoContent)
+    {
+        LogError("An error has occured while sending the webhook.");
+        return;
+    }
 }
