@@ -27,8 +27,6 @@ enum struct Global
     ConVar AppId;
 
     GlobalForward OnUpdate;
-
-    bool Send;
 }
 
 Global Core;
@@ -75,24 +73,17 @@ public void OnPluginStart()
 
 public void OnConfigsExecuted()
 {
-    if (Core.Debug.BoolValue)
-    {
-        LogMessage("Sun timer started.");
-    }
-
-    Core.Send = false;
-
     if (GetServerVersion())
     {
+        if (Core.Debug.BoolValue)
+        {
+            LogMessage("Sun timer started.");
+        }
+        
         CreateTimer(Core.Interval.FloatValue, Timer_CheckVersion, _, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
     }
 
     Core.MaxVisible = FindConVar("sv_visiblemaxplayers");
-}
-
-public void OnMapStart()
-{
-    Core.Send = false;
 }
 
 public Action Timer_CheckVersion(Handle timer)
@@ -139,14 +130,14 @@ public void OnHTTPResponse(HTTPResponse response, any value)
 
     if (jObj.GetBool("up_to_date") && Core.Debug.BoolValue)
     {
-        LogMessage("Server Version %d is up date.", Core.ServerVersion);
+        LogMessage("Server Version %d is up to date.", Core.ServerVersion);
         Core.ValveVersion = Core.ServerVersion;
         return;
     }
 
     Core.ValveVersion = jObj.GetInt("required_version");
     delete jObj;
-    
+
     CheckVersions();
 }
 
@@ -227,15 +218,10 @@ int CheckVersions()
     {
         LogMessage("Server seems to be out of date!");
 
-        if (!Core.Send)
-        {
-            Call_StartForward(Core.OnUpdate);
-            Call_PushCell(Core.ServerVersion);
-            Call_PushCell(Core.ValveVersion);
-            Call_Finish();
-        }
-
-        Core.Send = true;
+        Call_StartForward(Core.OnUpdate);
+        Call_PushCell(Core.ServerVersion);
+        Call_PushCell(Core.ValveVersion);
+        Call_Finish();
 
         if (Core.Message.BoolValue)
         {
