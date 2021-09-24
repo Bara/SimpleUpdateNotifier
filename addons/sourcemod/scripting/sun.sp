@@ -116,7 +116,7 @@ void GetValveVersion()
 public void OnHTTPResponse(HTTPResponse response, any value)
 {
     if (response.Status != HTTPStatus_OK) {
-        PrintToServer("[SUN] Status Code: %d", response.Status);
+        LogMessage("[SUN] Status Code: %d", response.Status);
         return;
     }
 
@@ -128,9 +128,13 @@ public void OnHTTPResponse(HTTPResponse response, any value)
         return;
     }
 
-    if (jObj.GetBool("up_to_date") && Core.Debug.BoolValue)
+    if (jObj.GetBool("up_to_date"))
     {
-        LogMessage("Server Version %d is up to date.", Core.ServerVersion);
+        if (Core.Debug.BoolValue)
+        {
+            LogMessage("Server Version %d is up to date.", Core.ServerVersion);
+        }
+        
         Core.ValveVersion = Core.ServerVersion;
         return;
     }
