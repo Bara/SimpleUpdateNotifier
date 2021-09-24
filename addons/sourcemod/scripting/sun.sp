@@ -306,9 +306,9 @@ bool CheckPercent()
         }
     }
 
-    int iPercent = iCount / iSlots * 100;
+    float fPercent = (float(iCount) / float(iSlots)) * 100.0;
 
-    if (iPercent > Core.RestartPercent.IntValue)
+    if (fPercent > Core.RestartPercent.FloatValue)
     {
         return false;
     }
