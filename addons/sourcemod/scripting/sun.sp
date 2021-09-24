@@ -96,6 +96,8 @@ public Action Timer_CheckVersion(Handle timer)
     // Prevent spamming
     if (Core.ServerVersion < Core.ValveVersion)
     {
+        CheckVersions();
+
         return Plugin_Continue;
     }
 
