@@ -5,11 +5,14 @@
 #define PLUGIN_VERSION "1.0.0"
 
 #include <sourcemod>
-#include <SteamWorks>
+#include <ripext>
 #include <autoexecconfig>
 
 enum struct Global
 {
+    int ServerVersion;
+    int ValveVersion;
+
     ConVar Debug;
     ConVar Interval;
     ConVar Message;
@@ -21,6 +24,7 @@ enum struct Global
     ConVar RestartPercent;
     ConVar Delay;
     ConVar MaxVisible;
+    ConVar AppId;
 
     GlobalForward OnUpdate;
 
@@ -31,11 +35,11 @@ Global Core;
 
 public Plugin myinfo =
 {
-	name = "Simple Update Notifier",
-	author = "Bara",
-	description = PLUGIN_DESCRIPTION,
-	version = PLUGIN_VERSION,
-	url = "github.com/Bara"
+    name = "Simple Update Notifier",
+    author = "Bara",
+    description = PLUGIN_DESCRIPTION,
+    version = PLUGIN_VERSION,
+    url = "github.com/Bara"
 };
 
 public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
@@ -55,7 +59,7 @@ public void OnPluginStart()
     AutoExecConfig_SetCreateFile(true);
     AutoExecConfig_SetFile("sun.core");
     Core.Debug = AutoExecConfig_CreateConVar("sun_debug", "0", "Enable debug mode?", _, true, 0.0, true, 1.0);
-    Core.Interval = AutoExecConfig_CreateConVar("sun_interval", "300", "In which interval should we check for new updates?", _, true, 60.0);
+    Core.Interval = AutoExecConfig_CreateConVar("sun_interval", "120", "In which interval should we check for new updates?", _, true, 60.0);
     Core.Message = AutoExecConfig_CreateConVar("sun_message", "1", "Print message into servers chat?", _, true, 0.0, true, 1.0);
     Core.Amount = AutoExecConfig_CreateConVar("sun_amount", "10", "How much messages should be print?", _, true, 1.0);
     Core.URL = AutoExecConfig_CreateConVar("sun_url", "https://raw.githubusercontent.com/SteamDatabase/GameTracking-CSGO/master/csgo/steam.inf", "Raw url to the steam.inf file.");
@@ -64,6 +68,7 @@ public void OnPluginStart()
     Core.RestartPlayers = AutoExecConfig_CreateConVar("sun_restart_players", "-1", "Restart the server with a amount of X players or less. (-1 to disable this feature)", _, true, -1.0);
     Core.RestartPercent = AutoExecConfig_CreateConVar("sun_restart_percent", "0", "Restart the server with a amount of X% players or less. (0 to disable this feature)", _, true, 0.0);
     Core.Delay = AutoExecConfig_CreateConVar("sun_delay", "5.0", "After how much seconds restart the server?", _, true, 0.0);
+    Core.AppId = AutoExecConfig_CreateConVar("sun_appid", "730", "Set the appid of your server. 730 as example for CSGO Server");
     AutoExecConfig_ExecuteFile();
     AutoExecConfig_CleanFile();
 }
@@ -77,7 +82,10 @@ public void OnConfigsExecuted()
 
     Core.Send = false;
 
-    CreateTimer(Core.Interval.FloatValue, Timer_CheckVersion, _, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
+    if (GetServerVersion())
+    {
+        CreateTimer(Core.Interval.FloatValue, Timer_CheckVersion, _, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
+    }
 
     Core.MaxVisible = FindConVar("sv_visiblemaxplayers");
 }
@@ -94,111 +102,55 @@ public Action Timer_CheckVersion(Handle timer)
         LogMessage("Timer_CheckVersion called");
     }
 
-    Download_SteamDBSteamINF();
+    // Prevent spamming
+    if (Core.ServerVersion < Core.ValveVersion)
+    {
+        return Plugin_Continue;
+    }
+
+    GetValveVersion();
 
     return Plugin_Continue;
 }
 
-void Download_SteamDBSteamINF()
+void GetValveVersion()
 {
-    char sURL[128];
-    Core.URL.GetString(sURL, sizeof(sURL));
+    char sEndpoint[256];
+    FormatEx(sEndpoint, sizeof(sEndpoint), "http://api.steampowered.com/ISteamApps/UpToDateCheck/v0001/?appid=%d&version=%d&format=json", Core.AppId.IntValue, Core.ServerVersion);
 
-    if (Core.Debug.BoolValue)
-    {
-        LogMessage("URL: %s", sURL);
-    }
-
-    Handle hRequest = SteamWorks_CreateHTTPRequest(k_EHTTPMethodGET, sURL);
-    SteamWorks_SetHTTPRequestHeaderValue(hRequest, "Pragma", "no-cache");
-    SteamWorks_SetHTTPRequestHeaderValue(hRequest, "Cache-Control", "no-cache");
-    SteamWorks_SetHTTPCallbacks(hRequest, OnSteamWorksHTTPComplete);
-    SteamWorks_SendHTTPRequest(hRequest);
+    HTTPRequest request = new HTTPRequest(sEndpoint);
+    request.Get(OnHTTPResponse);
 }
 
-public void OnSteamWorksHTTPComplete(Handle hRequest, bool bFailure, bool bRequestSuccessful, EHTTPStatusCode eStatusCode)
+public void OnHTTPResponse(HTTPResponse response, any value)
 {
-    if (bRequestSuccessful && eStatusCode == k_EHTTPStatusCode200OK)
-    {
-        DeleteFile("steamdb_steam.inf");
-
-        SteamWorks_WriteHTTPResponseBodyToFile(hRequest, "steamdb_steam.inf");
-
-        CheckVersions();
-    }
-    else
-    {
-        SetFailState("SteamWorks error. StatusCode %d RequestSuccessful: %d, Failure: %d", eStatusCode, bRequestSuccessful, bFailure);
-    }
-    
-    delete hRequest;
-}
-
-int CheckVersions()
-{
-    int iLocal = GetLocalVersions();
-
-    int iServer = GetSteamDBVersions();
-
-    if (Core.Debug.BoolValue)
-    {
-        LogMessage("Test1 - %d/%d", iLocal, iServer);
-    }
-
-    if (iLocal == -1 || iServer == -1)
-    {
+    if (response.Status != HTTPStatus_OK) {
+        PrintToServer("[SUN] Status Code: %d", response.Status);
         return;
     }
 
-    if (Core.Debug.BoolValue)
+    JSONObject jObj = view_as<JSONObject>(view_as<JSONObject>(response.Data).Get("response"));
+
+    if (!jObj.GetBool("success"))
     {
-        LogMessage("Test 2");
+        SetFailState("Valve API sends success->false");
+        return;
     }
 
-    if (iLocal == iServer)
+    if (jObj.GetBool("up_to_date") && Core.Debug.BoolValue)
     {
-        LogMessage("Server seems to be up to date.");
+        LogMessage("Server Version %d is up date.", Core.ServerVersion);
+        Core.ValveVersion = Core.ServerVersion;
+        return;
     }
-    else
-    {
-        LogMessage("Server seems to be out of date!");
 
-        if (!Core.Send)
-        {
-            Call_StartForward(Core.OnUpdate);
-            Call_PushCell(iLocal);
-            Call_PushCell(iServer);
-            Call_Finish();
-        }
-
-        Core.Send = true;
-
-        if (Core.Message.BoolValue)
-        {
-            for (int i = 1; i <= Core.Amount.IntValue; i++)
-            {
-                PrintToChatAll("This server seems to be out of date! Local Version: %d, SteamDB Version: %d", iLocal, iServer);
-            }
-        }
-
-        if (Core.Restart.BoolValue && CheckPlayers() && CheckPercent())
-        {
-            if (Core.RestartMessage.BoolValue)
-            {
-                PrintToChatAll("Server will be restarting in %.0f seconds...", Core.Delay.FloatValue);
-            }
-
-            CreateTimer(Core.Delay.FloatValue, Timer_RestartServer);
-        }
-    }
+    Core.ValveVersion = jObj.GetInt("required_version");
+    delete jObj;
+    
+    CheckVersions();
 }
 
-public Action Timer_RestartServer(Handle timer)
-{
-    ServerCommand("_restart");
-}
-
-int GetLocalVersions()
+int GetServerVersion()
 {
     File fiLocal = OpenFile("steam.inf", "r");
 
@@ -210,6 +162,8 @@ int GetLocalVersions()
 
     char sLine[48];
     char sLocal[48];
+
+    bool bFound = false;
 
     while (!fiLocal.EndOfFile() && fiLocal.ReadLine(sLine, sizeof(sLine)))
     {
@@ -223,6 +177,8 @@ int GetLocalVersions()
 
                 strcopy(sLocal, sizeof(sLocal), sLine);
 
+                bFound = true;
+
                 break;
             }
         }
@@ -230,56 +186,75 @@ int GetLocalVersions()
 
     delete fiLocal;
 
-    int iLocal = StringToInt(sLocal);
+    if (!bFound)
+    {
+        SetFailState("Can't find the server version in your steam.inf!");
+        return bFound;
+    }
+
+    Core.ServerVersion = StringToInt(sLocal);
 
     if (Core.Debug.BoolValue)
     {
-        LogMessage("[Local] PatchVersion: %d (String: %s)", iLocal, sLocal);
+        LogMessage("[Local] PatchVersion: %d (String: %s)", Core.ServerVersion, sLocal);
     }
 
-    return iLocal;
+    return bFound;
 }
 
-int GetSteamDBVersions()
+int CheckVersions()
 {
-    File fiSteamDB = OpenFile("steamdb_steam.inf", "r");
-
-    if (fiSteamDB == null)
+    if (Core.Debug.BoolValue)
     {
-        SetFailState("Can't read steamdb_steam.inf file!");
-        return -1;
+        LogMessage("Test1 - %d/%d", Core.ServerVersion, Core.ValveVersion);
     }
 
-    char sLine[48];
-    char sServer[48];
-
-    while (!fiSteamDB.EndOfFile() && fiSteamDB.ReadLine(sLine, sizeof(sLine)))
+    if (Core.ServerVersion == -1 || Core.ValveVersion == -1)
     {
-        if (strlen(sLine) > 1)
-        {
-            if (StrContains(sLine, "PatchVersion" ,false) != -1)
-            {
-                ReplaceString(sLine, sizeof(sLine), "PatchVersion=", "");
-                ReplaceString(sLine, sizeof(sLine), ".", "");
-                TrimString(sLine);
-
-                strcopy(sServer, sizeof(sServer), sLine);
-
-                break;
-            }
-        }
+        return;
     }
-
-    delete fiSteamDB;
-
-    int iServer = StringToInt(sServer);
 
     if (Core.Debug.BoolValue)
     {
-        LogMessage("[SteamDB] PatchVersion: %d (String: %s)", iServer, sServer);
+        LogMessage("Test 2");
     }
 
-    return iServer;
+    if (Core.ServerVersion == Core.ValveVersion)
+    {
+        LogMessage("Server seems to be up to date.");
+    }
+    else
+    {
+        LogMessage("Server seems to be out of date!");
+
+        if (!Core.Send)
+        {
+            Call_StartForward(Core.OnUpdate);
+            Call_PushCell(Core.ServerVersion);
+            Call_PushCell(Core.ValveVersion);
+            Call_Finish();
+        }
+
+        Core.Send = true;
+
+        if (Core.Message.BoolValue)
+        {
+            for (int i = 1; i <= Core.Amount.IntValue; i++)
+            {
+                PrintToChatAll("This server seems to be out of date! Local Version: %d, SteamDB Version: %d", Core.ServerVersion, Core.ValveVersion);
+            }
+        }
+
+        if (Core.Restart.BoolValue && CheckPlayers() && CheckPercent())
+        {
+            if (Core.RestartMessage.BoolValue)
+            {
+                PrintToChatAll("Server will be restarting in %.0f seconds...", Core.Delay.FloatValue);
+            }
+
+            CreateTimer(Core.Delay.FloatValue, Timer_RestartServer);
+        }
+    }
 }
 
 bool CheckPlayers()
@@ -349,4 +324,9 @@ bool CheckPercent()
     }
 
     return true;
+}
+
+public Action Timer_RestartServer(Handle timer)
+{
+    ServerCommand("_restart");
 }
