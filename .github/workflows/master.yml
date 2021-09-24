@@ -23,7 +23,12 @@ jobs:
         with:
           version: ${{ matrix.SM_VERSION }}
 
-      - name: Compile plugin
+      - name: Compile sun.sp
         run: |
           echo -e "\nCompiling sun.sp..."
           spcomp -E -w234 -O2 -v2 -i addons/sourcemod/scripting/include addons/sourcemod/scripting/sun.sp
+
+      - name: Compile sun_discord.sp
+        run: |
+          echo -e "\nCompiling sun_discord.sp..."
+          spcomp -E -w234 -O2 -v2 -i addons/sourcemod/scripting/include addons/sourcemod/scripting/sun_discord.sp
