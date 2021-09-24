@@ -1,7 +1,7 @@
 #pragma semicolon 1
 #pragma newdecls required
 
-#define PLUGIN_DESCRIPTION "Checks every x seconds the server+patch versions from the steam.inf file (locally + steamdb)"
+#define PLUGIN_DESCRIPTION "Checks every x seconds the server+patch versions from the steam.inf file (locally + valveapi)"
 #define PLUGIN_VERSION "1.0.0"
 
 #include <sourcemod>
@@ -134,7 +134,7 @@ public void OnHTTPResponse(HTTPResponse response, any value)
         {
             LogMessage("Server Version %d is up to date.", Core.ServerVersion);
         }
-        
+
         Core.ValveVersion = Core.ServerVersion;
         return;
     }
@@ -231,7 +231,7 @@ int CheckVersions()
         {
             for (int i = 1; i <= Core.Amount.IntValue; i++)
             {
-                PrintToChatAll("This server seems to be out of date! Local Version: %d, SteamDB Version: %d", Core.ServerVersion, Core.ValveVersion);
+                PrintToChatAll("This server seems to be out of date! Server Version: %d, Valve Version: %d", Core.ServerVersion, Core.ValveVersion);
             }
         }
 
