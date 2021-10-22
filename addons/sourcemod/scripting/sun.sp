@@ -17,7 +17,6 @@ enum struct Global
     ConVar Interval;
     ConVar Message;
     ConVar Amount;
-    ConVar URL;
     ConVar Restart;
     ConVar RestartMessage;
     ConVar RestartPlayers;
@@ -60,7 +59,6 @@ public void OnPluginStart()
     Core.Interval = AutoExecConfig_CreateConVar("sun_interval", "120", "In which interval should we check for new updates?", _, true, 60.0);
     Core.Message = AutoExecConfig_CreateConVar("sun_message", "1", "Print message into servers chat?", _, true, 0.0, true, 1.0);
     Core.Amount = AutoExecConfig_CreateConVar("sun_amount", "10", "How much messages should be print?", _, true, 1.0);
-    Core.URL = AutoExecConfig_CreateConVar("sun_url", "https://raw.githubusercontent.com/SteamDatabase/GameTracking-CSGO/master/csgo/steam.inf", "Raw url to the steam.inf file.");
     Core.Restart = AutoExecConfig_CreateConVar("sun_restart", "0", "Restart server on update?", _, true, 0.0, true, 1.0);
     Core.RestartMessage = AutoExecConfig_CreateConVar("sun_restart_message", "0", "Print message when restart is planned? sun_restart must be 1", _, true, 0.0, true, 1.0);
     Core.RestartPlayers = AutoExecConfig_CreateConVar("sun_restart_players", "-1", "Restart the server with a amount of X players or less. (-1 to disable this feature)", _, true, -1.0);
@@ -127,6 +125,7 @@ public void OnHTTPResponse(HTTPResponse response, any value)
     if (!jObj.GetBool("success"))
     {
         SetFailState("Valve API sends success->false");
+        delete jObj;
         return;
     }
 
@@ -138,6 +137,7 @@ public void OnHTTPResponse(HTTPResponse response, any value)
         }
 
         Core.ValveVersion = Core.ServerVersion;
+        delete jObj;
         return;
     }
 
@@ -268,6 +268,11 @@ bool CheckPlayers()
 
     if (iCount > Core.RestartPlayers.IntValue)
     {
+        if (Core.Debug.BoolValue)
+        {
+            LogMessage("Players: %d (sun_restart_players is %d)", iCount, Core.RestartPlayers.IntValue);
+        }
+
         return false;
     }
 
@@ -312,6 +317,11 @@ bool CheckPercent()
 
     if (fPercent > Core.RestartPercent.FloatValue)
     {
+        if (Core.Debug.BoolValue)
+        {
+            LogMessage("Players: %d (Slots: %d), Percentage: %.2f (sun_restart_percent is %.2f)", iCount, iSlots, fPercent, Core.RestartPercent.FloatValue);
+        }
+        
         return false;
     }
 
