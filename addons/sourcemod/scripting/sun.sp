@@ -244,6 +244,7 @@ int CheckVersions()
                 PrintToChatAll("Server will be restarting in %.0f seconds...", Core.Delay.FloatValue);
             }
 
+            LogMessage("Server will be restarting in %.0f seconds...", Core.Delay.FloatValue);
             CreateTimer(Core.Delay.FloatValue, Timer_RestartServer);
         }
     }
@@ -321,7 +322,7 @@ bool CheckPercent()
         {
             LogMessage("Players: %d (Slots: %d), Percentage: %.2f (sun_restart_percent is %.2f)", iCount, iSlots, fPercent, Core.RestartPercent.FloatValue);
         }
-        
+
         return false;
     }
 
