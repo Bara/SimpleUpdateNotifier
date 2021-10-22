@@ -18,12 +18,6 @@ jobs:
     steps:
       - uses: actions/checkout@v1
 
-      - name: Set environment variables
-        run: |
-          git fetch --unshallow
-          echo "COMMIT=$(git rev-list --count HEAD)" >> $GITHUB_ENV
-          echo "SHORT_SHA=$(git describe --always --long --dirty)" >> $GITHUB_ENV
-
       - name: Setup SourcePawn Compiler ${{ matrix.SM_VERSION }}
         uses: rumblefrog/setup-sp@master
         with:
@@ -42,5 +36,5 @@ jobs:
       - name: Create archive
         uses: actions/upload-artifact@v2
         with:
-          name: SUN.${{ env.COMMIT }}.${{ env.SHORT_SHA }}.SM${{ matrix.SM_VERSION }}
+          name: SUN.SM${{ matrix.SM_VERSION }}
           path: ./
