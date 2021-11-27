@@ -1,10 +1,11 @@
 #pragma semicolon 1
 #pragma newdecls required
 
-#define PLUGIN_DESCRIPTION "Checks every x seconds the server+patch versions from the steam.inf file (locally + valveapi)"
+#define PLUGIN_DESCRIPTION "Checks every x seconds the server+patch versions from the status command (locally + valveapi)"
 #define PLUGIN_VERSION "1.0.0"
 
 #include <sourcemod>
+#include <regex>
 #include <ripext>
 #include <autoexecconfig>
 
@@ -24,6 +25,9 @@ enum struct Global
     ConVar Delay;
     ConVar MaxVisible;
     ConVar AppId;
+    ConVar Recheck;
+
+    Handle Timer;
 
     GlobalForward OnUpdate;
 }
@@ -65,6 +69,7 @@ public void OnPluginStart()
     Core.RestartPercent = AutoExecConfig_CreateConVar("sun_restart_percent", "0", "Restart the server with a amount of X% players or less. (0 to disable this feature)", _, true, 0.0);
     Core.Delay = AutoExecConfig_CreateConVar("sun_delay", "5.0", "After how much seconds restart the server?", _, true, 0.0);
     Core.AppId = AutoExecConfig_CreateConVar("sun_appid", "730", "Set the appid of your server. 730 as example for CSGO Server");
+    Core.Recheck = AutoExecConfig_CreateConVar("sun_recheck", "1.0", "After getting false version the delay between next version check");
     AutoExecConfig_ExecuteFile();
     AutoExecConfig_CleanFile();
 }
@@ -73,12 +78,11 @@ public void OnConfigsExecuted()
 {
     if (GetServerVersion())
     {
-        if (Core.Debug.BoolValue)
-        {
-            LogMessage("Sun timer started.");
-        }
-        
-        CreateTimer(Core.Interval.FloatValue, Timer_CheckVersion, _, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
+        StartTimer();
+    }
+    else
+    {
+        CreateTimer(Core.Recheck.FloatValue, Timer_ReCheck, _, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
     }
 
     Core.MaxVisible = FindConVar("sv_visiblemaxplayers");
@@ -100,6 +104,18 @@ public Action Timer_CheckVersion(Handle timer)
     }
 
     GetValveVersion();
+
+    return Plugin_Continue;
+}
+
+public Action Timer_ReCheck(Handle timer)
+{
+    if (GetServerVersion())
+    {
+        StartTimer();
+
+        return Plugin_Stop;
+    }
 
     return Plugin_Continue;
 }
@@ -147,59 +163,37 @@ public void OnHTTPResponse(HTTPResponse response, any value)
     CheckVersions();
 }
 
-int GetServerVersion()
+bool GetServerVersion()
 {
-    File fiLocal = OpenFile("steam.inf", "r");
+    char sBuffer[4096];
+    ServerCommandEx(sBuffer, sizeof(sBuffer), "status");
 
-    if (fiLocal == null)
+    if (strlen(sBuffer) < 31)
     {
-        SetFailState("Can't read steam.inf file!");
-        return -1;
+        return false;
     }
 
-    char sLine[48];
-    char sLocal[48];
+    Regex regex = new Regex("^version :.+\\/([0-9]+) [0-9].+$", PCRE_MULTILINE);
 
-    bool bFound = false;
-
-    while (!fiLocal.EndOfFile() && fiLocal.ReadLine(sLine, sizeof(sLine)))
-    {
-        if (strlen(sLine) > 1)
-        {
-            if (StrContains(sLine, "PatchVersion" ,false) != -1)
-            {
-                ReplaceString(sLine, sizeof(sLine), "PatchVersion=", "");
-                ReplaceString(sLine, sizeof(sLine), ".", "");
-                TrimString(sLine);
-
-                strcopy(sLocal, sizeof(sLocal), sLine);
-
-                bFound = true;
-
-                break;
-            }
-        }
+    if (regex.Match(sBuffer) != 2) {
+        return false;
     }
 
-    delete fiLocal;
+    char sVersion[12];
+    regex.GetSubString(1, sVersion, sizeof(sVersion));
+    Core.ServerVersion = StringToInt(sVersion);
 
-    if (!bFound)
-    {
-        SetFailState("Can't find the server version in your steam.inf!");
-        return bFound;
-    }
-
-    Core.ServerVersion = StringToInt(sLocal);
+    delete regex;
 
     if (Core.Debug.BoolValue)
     {
-        LogMessage("[Local] PatchVersion: %d (String: %s)", Core.ServerVersion, sLocal);
+        LogMessage("[Local] PatchVersion: %d (String: %s)", Core.ServerVersion, sVersion);
     }
 
-    return bFound;
+    return true;
 }
 
-int CheckVersions()
+void CheckVersions()
 {
     if (Core.Debug.BoolValue)
     {
@@ -332,4 +326,22 @@ bool CheckPercent()
 public Action Timer_RestartServer(Handle timer)
 {
     ServerCommand("_restart");
+
+    return Plugin_Stop;
+}
+
+void StartTimer()
+{
+    if (Core.Timer != null)
+    {
+        LogMessage("Stopping active timer...");
+        delete Core.Timer;
+    }
+
+    if (Core.Debug.BoolValue)
+    {
+        LogMessage("Sun timer started.");
+    }
+    
+    Core.Timer = CreateTimer(Core.Interval.FloatValue, Timer_CheckVersion, _, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
 }
