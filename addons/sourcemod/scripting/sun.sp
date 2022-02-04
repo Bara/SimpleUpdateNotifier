@@ -175,7 +175,9 @@ bool GetServerVersion()
 
     Regex regex = new Regex("^version :.+\\/([0-9]+) [0-9].+$", PCRE_MULTILINE);
 
-    if (regex.Match(sBuffer) != 2) {
+    if (regex.Match(sBuffer) != 2)
+    {
+        delete regex;
         return false;
     }
 
