@@ -2,18 +2,25 @@
 
 methodmap EmbedFooter < JSONObject
 {
-	public EmbedFooter() 
+	/**
+	 * Constructor for the EmbedFooter methodmap.
+	 * 
+	 * @param text			Text of the footer.
+	 * @return					Returns the EmbedFooter.
+	 */
+	public EmbedFooter(const char[] text="") 
 	{
 		JSONObject jsonObject = new JSONObject();
+		jsonObject.SetString("text", text);
 		return view_as<EmbedFooter>(jsonObject);
 	}
 
 	/**
 	 * Retrieve the text of the footer.
 	 * 
-	 * @param buffer        String buffer to store value.
-	 * @param maxlength     Maximum length of the string buffer.
-	 * @return              True on success. False otherwise.
+	 * @param buffer				String buffer to store value.
+	 * @param maxlength			Maximum length of the string buffer.
+	 * @return							True on success. False otherwise.
 	 */
 	public bool GetText(char[] buffer, int maxlength)
 	{
@@ -23,8 +30,8 @@ methodmap EmbedFooter < JSONObject
 	/**
 	 * Set the text of the footer.
 	 * 
-	 * @param text   				Text of the footer.
-	 * @return        			True on success. False otherwise.
+	 * @param text					Text of the footer.
+	 * @return							True on success. False otherwise.
 	 */
 	public bool SetText(const char[] text)
 	{
@@ -34,9 +41,9 @@ methodmap EmbedFooter < JSONObject
 	/**
 	 * Retrieve the url of the footer icon.
 	 * 
-	 * @param buffer        String buffer to store value.
-	 * @param maxlength     Maximum length of the string buffer.
-	 * @return              True on success. False otherwise.
+	 * @param buffer				String buffer to store value.
+	 * @param maxlength			Maximum length of the string buffer.
+	 * @return							True on success. False otherwise.
 	 */
 	public bool GetIconURL(char[] buffer, int maxlength)
 	{
@@ -47,8 +54,8 @@ methodmap EmbedFooter < JSONObject
 	 * Set the url of the footer icon.
 	 * Note : this only supports http(s).
 	 * 
-	 * @param icon_url   		IconURL of the footer.
-	 * @return        			True on success. False otherwise.
+	 * @param icon_url			IconURL of the footer.
+	 * @return							True on success. False otherwise.
 	 */
 	public bool SetIconURL(const char[] icon_url)
 	{
@@ -58,9 +65,9 @@ methodmap EmbedFooter < JSONObject
 	/**
 	 * Retrieve the proxy_icon_url of the footer.
 	 * 
-	 * @param buffer        String buffer to store value.
-	 * @param maxlength     Maximum length of the string buffer.
-	 * @return              True on success. False otherwise.
+	 * @param buffer				String buffer to store value.
+	 * @param maxlength			Maximum length of the string buffer.
+	 * @return							True on success. False otherwise.
 	 */
 	public bool GetProxyIconURL(char[] buffer, int maxlength)
 	{
@@ -70,8 +77,8 @@ methodmap EmbedFooter < JSONObject
 	/**
 	 * Set a proxied url of the footer icon.
 	 * 
-	 * @param proxy_icon_url   		IconURL of the footer.
-	 * @return        						True on success. False otherwise.
+	 * @param proxy_icon_url			IconURL of the footer.
+	 * @return										True on success. False otherwise.
 	 */
 	public bool SetProxyIconURL(const char[] proxy_icon_url)
 	{
@@ -82,18 +89,25 @@ methodmap EmbedFooter < JSONObject
 
 methodmap EmbedImage < JSONObject
 {
-	public EmbedImage() 
+	/**
+	 * Constructor for the EmbedImage methodmap.
+	 * 
+	 * @param url				URL of the image.
+	 * @return					Returns the EmbedImage.
+	 */
+	public EmbedImage(const char[] url="") 
 	{
 		JSONObject jsonObject = new JSONObject();
+		jsonObject.SetString("url", url);
 		return view_as<EmbedImage>(jsonObject);
 	}
 
 	/**
 	 * Retrieve the source url of the media.
 	 * 
-	 * @param buffer        String buffer to store value.
-	 * @param maxlength     Maximum length of the string buffer.
-	 * @return              True on success. False otherwise.
+	 * @param buffer				String buffer to store value.
+	 * @param maxlength			Maximum length of the string buffer.
+	 * @return							True on success. False otherwise.
 	 */
 	public bool GetURL(char[] buffer, int maxlength)
 	{
@@ -104,8 +118,8 @@ methodmap EmbedImage < JSONObject
 	 * Set the source url of the media.
 	 * Note : this only supports http(s).
 	 * 
-	 * @param url   		URL of the media.
-	 * @return        	True on success. False otherwise.
+	 * @param url				URL of the media.
+	 * @return					True on success. False otherwise.
 	 */
 	public bool SetURL(const char[] url)
 	{
@@ -115,9 +129,9 @@ methodmap EmbedImage < JSONObject
 	/**
 	 * Retrieve the proxied URL of the media.
 	 * 
-	 * @param buffer        String buffer to store value.
-	 * @param maxlength     Maximum length of the string buffer.
-	 * @return              True on success. False otherwise.
+	 * @param buffer				String buffer to store value.
+	 * @param maxlength			Maximum length of the string buffer.
+	 * @return							True on success. False otherwise.
 	 */
 	public bool GetProxyURL(char[] buffer, int maxlength)
 	{
@@ -127,8 +141,8 @@ methodmap EmbedImage < JSONObject
 	/**
 	 * Set a proxied URL of the media.
 	 * 
-	 * @param proxy_url   		Proxy URL of the media.
-	 * @return        				True on success. False otherwise.
+	 * @param proxy_url				Proxy URL of the media.
+	 * @return								True on success. False otherwise.
 	 */
 	public bool SetProxyURL(const char[] proxy_url)
 	{
@@ -138,7 +152,7 @@ methodmap EmbedImage < JSONObject
 	/**
 	 * Retrieve the height of the media.
 	 * 
-	 * @return    Int value of the media.
+	 * @return			Int value of the media.
 	 */
 	public int GetHeight()
 	{
@@ -148,8 +162,8 @@ methodmap EmbedImage < JSONObject
 	/**
 	 * Set the height of the media.
 	 * 
-	 * @param height   	Height of the media.
-	 * @return        	True on success. False otherwise.
+	 * @param height				Height of the media.
+	 * @return							True on success. False otherwise.
 	 */
 	public bool SetHeight(int height)
 	{
@@ -159,7 +173,7 @@ methodmap EmbedImage < JSONObject
 	/**
 	 * Retrieve the width of the media.
 	 * 
-	 * @return    Int value of the media.
+	 * @return				Int value of the media.
 	 */
 	public int GetWidth()
 	{
@@ -169,8 +183,8 @@ methodmap EmbedImage < JSONObject
 	/**
 	 * Set the width of the media.
 	 * 
-	 * @param width   	Width of the media.
-	 * @return        	True on success. False otherwise.
+	 * @param width			Width of the media.
+	 * @return					True on success. False otherwise.
 	 */
 	public bool SetWidth(int width)
 	{
@@ -181,9 +195,16 @@ methodmap EmbedImage < JSONObject
 
 methodmap EmbedThumbnail < EmbedImage
 {
-	public EmbedThumbnail() 
+	/**
+	 * Constructor for the EmbedThumbnail methodmap.
+	 * 
+	 * @param url				URL of the thumbnail.
+	 * @return					Returns the EmbedThumbnail.
+	 */
+	public EmbedThumbnail(const char[] url="") 
 	{
 		JSONObject jsonObject = new JSONObject();
+		jsonObject.SetString("url", url);
 		return view_as<EmbedThumbnail>(jsonObject);
 	}
 }
@@ -191,9 +212,16 @@ methodmap EmbedThumbnail < EmbedImage
 
 methodmap EmbedVideo < EmbedImage
 {
-	public EmbedVideo() 
+	/**
+	 * Constructor for the EmbedVideo methodmap.
+	 * 
+	 * @param url				URL of the video.
+	 * @return					Returns the EmbedVideo.
+	 */
+	public EmbedVideo(const char[] url="") 
 	{
 		JSONObject jsonObject = new JSONObject();
+		jsonObject.SetString("url", url);
 		return view_as<EmbedVideo>(jsonObject);
 	}
 }
@@ -201,18 +229,25 @@ methodmap EmbedVideo < EmbedImage
 
 methodmap EmbedProvider < JSONObject
 {
-	public EmbedProvider() 
+	/**
+	 * Constructor for the EmbedProvider methodmap.
+	 * 
+	 * @param name			Name of the provider.
+	 * @return					Returns the EmbedProvider.
+	 */
+	public EmbedProvider(const char[] name="") 
 	{
 		JSONObject jsonObject = new JSONObject();
+		jsonObject.SetString("name", name);
 		return view_as<EmbedProvider>(jsonObject);
 	}
 
 	/**
 	 * Retrieve the name of the provider.
 	 * 
-	 * @param buffer        String buffer to store value.
-	 * @param maxlength     Maximum length of the string buffer.
-	 * @return              True on success. False otherwise.
+	 * @param buffer				String buffer to store value.
+	 * @param maxlength			Maximum length of the string buffer.
+	 * @return							True on success. False otherwise.
 	 */
 	public bool GetName(char[] buffer, int maxlength)
 	{
@@ -222,8 +257,8 @@ methodmap EmbedProvider < JSONObject
 	/**
 	 * Set the name of the provider.
 	 * 
-	 * @param name   		Name of the provider.
-	 * @return        	True on success. False otherwise.
+	 * @param name			Name of the provider.
+	 * @return					True on success. False otherwise.
 	 */
 	public bool SetName(const char[] name)
 	{
@@ -233,9 +268,9 @@ methodmap EmbedProvider < JSONObject
 		/**
 	 * Retrieve the source url of the provider.
 	 * 
-	 * @param buffer        String buffer to store value.
-	 * @param maxlength     Maximum length of the string buffer.
-	 * @return              True on success. False otherwise.
+	 * @param buffer				String buffer to store value.
+	 * @param maxlength			Maximum length of the string buffer.
+	 * @return							True on success. False otherwise.
 	 */
 	public bool GetURL(char[] buffer, int maxlength)
 	{
@@ -245,8 +280,8 @@ methodmap EmbedProvider < JSONObject
 	/**
 	 * Set the source url of the provider.
 	 * 
-	 * @param url   		URL of the provider.
-	 * @return        	True on success. False otherwise.
+	 * @param url				URL of the provider.
+	 * @return					True on success. False otherwise.
 	 */
 	public bool SetURL(const char[] url)
 	{
@@ -257,18 +292,25 @@ methodmap EmbedProvider < JSONObject
 
 methodmap EmbedAuthor < JSONObject
 {
-	public EmbedAuthor() 
+	/**
+	 * Constructor for the EmbedAuthor methodmap.
+	 * 
+	 * @param name			Name of the author.
+	 * @return					Returns the EmbedAuthor.
+	 */
+	public EmbedAuthor(const char[] name="") 
 	{
 		JSONObject jsonObject = new JSONObject();
+		jsonObject.SetString("name", name);
 		return view_as<EmbedAuthor>(jsonObject);
 	}
 
 	/**
 	 * Retrieve the name of the author.
 	 * 
-	 * @param buffer        String buffer to store value.
-	 * @param maxlength     Maximum length of the string buffer.
-	 * @return              True on success. False otherwise.
+	 * @param buffer				String buffer to store value.
+	 * @param maxlength			Maximum length of the string buffer.
+	 * @return							True on success. False otherwise.
 	 */
 	public bool GetName(char[] buffer, int maxlength)
 	{
@@ -278,8 +320,8 @@ methodmap EmbedAuthor < JSONObject
 	/**
 	 * Set the name of the author.
 	 * 
-	 * @param name   				Name of the author.
-	 * @return        			True on success. False otherwise.
+	 * @param name					Name of the author.
+	 * @return							True on success. False otherwise.
 	 */
 	public bool SetName(const char[] name)
 	{
@@ -289,9 +331,9 @@ methodmap EmbedAuthor < JSONObject
 	/**
 	 * Retrieve the url of the author.
 	 * 
-	 * @param buffer        String buffer to store value.
-	 * @param maxlength     Maximum length of the string buffer.
-	 * @return              True on success. False otherwise.
+	 * @param buffer				String buffer to store value.
+	 * @param maxlength			Maximum length of the string buffer.
+	 * @return							True on success. False otherwise.
 	 */
 	public bool GetURL(char[] buffer, int maxlength)
 	{
@@ -301,8 +343,8 @@ methodmap EmbedAuthor < JSONObject
 	/**
 	 * Set the url of the author.
 	 * 
-	 * @param url   	URL of the author.
-	 * @return        True on success. False otherwise.
+	 * @param url			URL of the author.
+	 * @return				True on success. False otherwise.
 	 */
 	public bool SetURL(const char[] url)
 	{
@@ -312,9 +354,9 @@ methodmap EmbedAuthor < JSONObject
 	/**
 	 * Retrieve the icon_url of the author.
 	 * 
-	 * @param buffer        String buffer to store value.
-	 * @param maxlength     Maximum length of the string buffer.
-	 * @return              True on success. False otherwise.
+	 * @param buffer				String buffer to store value.
+	 * @param maxlength			Maximum length of the string buffer.
+	 * @return							True on success. False otherwise.
 	 */
 	public bool GetIconURL(char[] buffer, int maxlength)
 	{
@@ -325,8 +367,8 @@ methodmap EmbedAuthor < JSONObject
 	 * Set the icon_url of the author.
 	 * Note : this only supports http(s).
 	 * 
-	 * @param icon_url   		IconURL of the author.
-	 * @return        			True on success. False otherwise.
+	 * @param icon_url			IconURL of the author.
+	 * @return							True on success. False otherwise.
 	 */
 	public bool SetIconURL(const char[] icon_url)
 	{
@@ -336,9 +378,9 @@ methodmap EmbedAuthor < JSONObject
 	/**
 	 * Retrieve the proxy_icon_url of the author.
 	 * 
-	 * @param buffer        String buffer to store value.
-	 * @param maxlength     Maximum length of the string buffer.
-	 * @return              True on success. False otherwise.
+	 * @param buffer				String buffer to store value.
+	 * @param maxlength			Maximum length of the string buffer.
+	 * @return							True on success. False otherwise.
 	 */
 	public bool GetProxyIconURL(char[] buffer, int maxlength)
 	{
@@ -348,8 +390,8 @@ methodmap EmbedAuthor < JSONObject
 	/**
 	 * Set a proxied url of the author.
 	 * 
-	 * @param proxy_icon_url   		IconURL of the author.
-	 * @return        						True on success. False otherwise.
+	 * @param proxy_icon_url			IconURL of the author.
+	 * @return										True on success. False otherwise.
 	 */
 	public bool SetProxyIconURL(const char[] proxy_icon_url)
 	{
@@ -360,18 +402,29 @@ methodmap EmbedAuthor < JSONObject
 
 methodmap EmbedField < JSONObject
 {
-	public EmbedField() 
+	/**
+	 * Constructor for the EmbedField methodmap.
+	 * 
+	 * @param name			Name of the field.
+	 * @param value			Value of the field.
+	 * @param inline		Bool value of the inline @parameter.
+	 * @return					Returns the EmbedField.
+	 */
+	public EmbedField(const char[] name="", const char[] value="", bool inline=true) 
 	{
 		JSONObject jsonObject = new JSONObject();
+		jsonObject.SetString("name", name);
+		jsonObject.SetString("value", value);
+		jsonObject.SetBool("inline", inline);
 		return view_as<EmbedField>(jsonObject);
 	}
 
 	/**
 	 * Retrieve the name of the field.
 	 * 
-	 * @param buffer        String buffer to store value.
-	 * @param maxlength     Maximum length of the string buffer.
-	 * @return              True on success. False otherwise.
+	 * @param buffer				String buffer to store value.
+	 * @param maxlength			Maximum length of the string buffer.
+	 * @return							True on success. False otherwise.
 	 */
 	public bool GetName(char[] buffer, int maxlength)
 	{
@@ -381,8 +434,8 @@ methodmap EmbedField < JSONObject
 	/**
 	 * Set the name of the field.
 	 * 
-	 * @param name   				Name of the field.
-	 * @return        			True on success. False otherwise.
+	 * @param name					Name of the field.
+	 * @return							True on success. False otherwise.
 	 */
 	public bool SetName(const char[] name)
 	{
@@ -392,9 +445,9 @@ methodmap EmbedField < JSONObject
 	/**
 	 * Retrieve the value of the field.
 	 * 
-	 * @param buffer        String buffer to store value.
-	 * @param maxlength     Maximum length of the string buffer.
-	 * @return              True on success. False otherwise.
+	 * @param buffer				String buffer to store value.
+	 * @param maxlength			Maximum length of the string buffer.
+	 * @return							True on success. False otherwise.
 	 */
 	public bool GetValue(char[] buffer, int maxlength)
 	{
@@ -404,8 +457,8 @@ methodmap EmbedField < JSONObject
 	/**
 	 * Set the value of the field.
 	 * 
-	 * @param value   	Value of the field.
-	 * @return        	True on success. False otherwise.
+	 * @param value			Value of the field.
+	 * @return					True on success. False otherwise.
 	 */
 	public bool SetValue(const char[] value)
 	{
@@ -413,9 +466,9 @@ methodmap EmbedField < JSONObject
 	}
 
 	/**
-	 * Retrieve the inline parameter of the field.
+	 * Retrieve the inline @parameter of the field.
 	 * 
-	 * @return			The bool value of the inline parameter.
+	 * @return			The bool value of the inline @parameter.
 	 */
 	public bool GetInline()
 	{
@@ -425,8 +478,8 @@ methodmap EmbedField < JSONObject
 	/**
 	 * Set whether or not this field should display inline.
 	 * 
-	 * @param inline   			Bool value of the inline parameter.
-	 * @return        			True on success. False otherwise.
+	 * @param inline				Bool value of the inline @parameter.
+	 * @return							True on success. False otherwise.
 	 */
 	public bool SetInline(bool inline)
 	{
@@ -436,19 +489,28 @@ methodmap EmbedField < JSONObject
 
 methodmap Embed < JSONObject
 {
-	public Embed() 
+	/**
+	 * Constructor for the Embed methodmap.
+	 * 
+	 * @param title						Title of the embed.
+	 * @param description			Description of the embed.
+	 * @return								Returns the Embed.
+	 */
+	public Embed(const char[] title="", const char[] description="") 
 	{
 		JSONObject jsonObject = new JSONObject();
 		jsonObject.SetInt("color", 0);
+		jsonObject.SetString("title", title);
+		jsonObject.SetString("description", description);
 		return view_as<Embed>(jsonObject);
 	}
 
 	/**
 	 * Retrieve the title of the embed.
 	 * 
-	 * @param szBuffer        String buffer to store value.
-	 * @param iBufferSize     Maximum length of the string buffer.
-	 * @return                True on success. False otherwise.
+	 * @param szBuffer				String buffer to store value.
+	 * @param iBufferSize			Maximum length of the string buffer.
+	 * @return								True on success. False otherwise.
 	 */
 	public bool GetTitle(char[] buffer, int maxlength)
 	{
@@ -458,8 +520,8 @@ methodmap Embed < JSONObject
 	/**
 	 * Set the title of the embed.
 	 * 
-	 * @param title     Title of the embed.
-	 * @return          True on success. False otherwise.
+	 * @param title			Title of the embed.
+	 * @return					True on success. False otherwise.
 	 */
 	public bool SetTitle(const char[] title)
 	{
@@ -469,9 +531,9 @@ methodmap Embed < JSONObject
 	/**
 	 * Retrieve the description of the embed.
 	 * 
-	 * @param buffer        String buffer to store value.
-	 * @param maxlength     Maximum length of the string buffer.
-	 * @return              True on success. False otherwise.
+	 * @param buffer				String buffer to store value.
+	 * @param maxlength			Maximum length of the string buffer.
+	 * @return							True on success. False otherwise.
 	 */
 	public bool GetDescription(char[] buffer, int maxlength)
 	{
@@ -481,8 +543,8 @@ methodmap Embed < JSONObject
 	/**
 	 * Set the description of the embed.
 	 * 
-	 * @param description   Description of the embed.
-	 * @return          		True on success. False otherwise.
+	 * @param description			Description of the embed.
+	 * @return								True on success. False otherwise.
 	 */
 	public bool SetDescription(const char[] description)
 	{
@@ -492,9 +554,9 @@ methodmap Embed < JSONObject
 	/**
 	 * Retrieve the URL of the embed.
 	 * 
-	 * @param buffer        String buffer to store value.
-	 * @param maxlength     Maximum length of the string buffer.
-	 * @return              True on success. False otherwise.
+	 * @param buffer				String buffer to store value.
+	 * @param maxlength			Maximum length of the string buffer.
+	 * @return							True on success. False otherwise.
 	 */
 	public bool GetURL(char[] buffer, int maxlength)
 	{
@@ -504,8 +566,8 @@ methodmap Embed < JSONObject
 	/**
 	 * Set the URL of the embed.
 	 * 
-	 * @param url   	URL of the embed.
-	 * @return        True on success. False otherwise.
+	 * @param url			URL of the embed.
+	 * @return				True on success. False otherwise.
 	 */
 	public bool SetURL(const char[] url)
 	{
@@ -515,9 +577,9 @@ methodmap Embed < JSONObject
 	/**
 	 * Retrieve the timestamp of the embed.
 	 * 
-	 * @param buffer        String buffer to store value.
-	 * @param maxlength     Maximum length of the string buffer.
-	 * @return              True on success. False otherwise.
+	 * @param buffer				String buffer to store value.
+	 * @param maxlength			Maximum length of the string buffer.
+	 * @return							True on success. False otherwise.
 	 */
 	public bool GetTimeStamp(char[] buffer, int maxlength)
 	{
@@ -528,9 +590,10 @@ methodmap Embed < JSONObject
 	 * Set the timestamp of the embed.
 	 * Note that the webhook will error out if the timestamp is not ISO 8601 complient.
 	 * Example: 1977-04-22T06:00:00Z
+	 * Use FormatTime to format it properly, see https://github.com/Sarrus1/discordWebhookAPI/blob/master/example.sp for an example.
 	 * 
-	 * @param timestamp   	Timestamp of the embed.
-	 * @return        			True on success. False otherwise.
+	 * @param timestamp			Timestamp of the embed.
+	 * @return							True on success. False otherwise.
 	 */
 	public bool SetTimeStamp(const char[] timestamp)
 	{
@@ -538,9 +601,21 @@ methodmap Embed < JSONObject
 	}
 
 	/**
+	 * Set the timestamp of the embed to now.
+	 * 
+	 * @return				True on success. False otherwise.
+	 */
+	public bool SetTimeStampNow()
+	{
+		char timeNow[256];
+		FormatTime(timeNow, sizeof timeNow, "%FT\%T.000%z", GetTime());
+		return this.SetString("timestamp", timeNow);
+	}
+
+	/**
 	 * Retrieve the timestamp of the embed.
 	 * 
-	 * @return    Int value of the color.
+	 * @return			Int value of the color.
 	 */
 	public int GetColor()
 	{
@@ -550,8 +625,8 @@ methodmap Embed < JSONObject
 	/**
 	 * Set the color of the embed.
 	 * 
-	 * @param color   	Color code of the embed.
-	 * @return        	True on success. False otherwise.
+	 * @param color			Color code of the embed.
+	 * @return					True on success. False otherwise.
 	 */
 	public bool SetColor(int color)
 	{
@@ -561,7 +636,7 @@ methodmap Embed < JSONObject
 	/**
 	 * Retrieve the footer of the embed.
 	 * 
-	 * @return    Footer of the embed.
+	 * @return			Footer of the embed.
 	 */
 	public EmbedFooter GetFooter()
 	{
@@ -571,8 +646,8 @@ methodmap Embed < JSONObject
 	/**
 	 * Set the footer of the embed.
 	 * 
-	 * @param footer   	Footer of the embed.
-	 * @return        	True on success. False otherwise.
+	 * @param footer			Footer of the embed.
+	 * @return						True on success. False otherwise.
 	 */
 	public bool SetFooter(EmbedFooter footer)
 	{
@@ -582,7 +657,7 @@ methodmap Embed < JSONObject
 	/**
 	 * Retrieve the image of the embed.
 	 * 
-	 * @return    Image of the embed.
+	 * @return			Image of the embed.
 	 */
 	public EmbedImage GetImage()
 	{
@@ -592,8 +667,8 @@ methodmap Embed < JSONObject
 	/**
 	 * Set the image of the embed.
 	 * 
-	 * @param image   	Image of the embed.
-	 * @return        	True on success. False otherwise.
+	 * @param image			Image of the embed.
+	 * @return					True on success. False otherwise.
 	 */
 	public bool SetImage(EmbedImage image)
 	{
@@ -603,7 +678,7 @@ methodmap Embed < JSONObject
 	/**
 	 * Retrieve the thumbnail of the embed.
 	 * 
-	 * @return    Thumbnail of the embed.
+	 * @return			Thumbnail of the embed.
 	 */
 	public EmbedThumbnail GetThumbnail()
 	{
@@ -613,8 +688,8 @@ methodmap Embed < JSONObject
 	/**
 	 * Set the thumbnail of the embed.
 	 * 
-	 * @param thumbnail   	Thumbnail of the embed.
-	 * @return        			True on success. False otherwise.
+	 * @param thumbnail			Thumbnail of the embed.
+	 * @return							True on success. False otherwise.
 	 */
 	public bool SetThumbnail(EmbedThumbnail thumbnail)
 	{
@@ -624,7 +699,7 @@ methodmap Embed < JSONObject
 	/**
 	 * Retrieve the video of the embed.
 	 * 
-	 * @return    Video of the embed.
+	 * @return			Video of the embed.
 	 */
 	public EmbedVideo GetVideo()
 	{
@@ -634,8 +709,8 @@ methodmap Embed < JSONObject
 	/**
 	 * Set the video of the embed.
 	 * 
-	 * @param video   			Video of the embed.
-	 * @return        			True on success. False otherwise.
+	 * @param video					Video of the embed.
+	 * @return							True on success. False otherwise.
 	 */
 	public bool SetVideo(EmbedVideo video)
 	{
@@ -645,7 +720,7 @@ methodmap Embed < JSONObject
 	/**
 	 * Retrieve the provider of the embed.
 	 * 
-	 * @return    Provider of the embed.
+	 * @return			Provider of the embed.
 	 */
 	public EmbedProvider GetProvider()
 	{
@@ -655,8 +730,8 @@ methodmap Embed < JSONObject
 	/**
 	 * Set the provider of the embed.
 	 * 
-	 * @param provider   			Provider of the embed.
-	 * @return        				True on success. False otherwise.
+	 * @param provider				Provider of the embed.
+	 * @return								True on success. False otherwise.
 	 */
 	public bool SetProvider(EmbedProvider provider)
 	{
@@ -666,7 +741,7 @@ methodmap Embed < JSONObject
 	/**
 	 * Retrieve the author of the embed.
 	 * 
-	 * @return    Author of the embed.
+	 * @return			Author of the embed.
 	 */
 	public EmbedAuthor GetAuthor()
 	{
@@ -676,8 +751,8 @@ methodmap Embed < JSONObject
 	/**
 	 * Set the author of the embed.
 	 * 
-	 * @param author   			Author of the embed.
-	 * @return        			True on success. False otherwise.
+	 * @param author				Author of the embed.
+	 * @return							True on success. False otherwise.
 	 */
 	public bool SetAuthor(EmbedAuthor author)
 	{
@@ -687,7 +762,7 @@ methodmap Embed < JSONObject
 	/**
 	 * Retrieve the fields of the embed.
 	 * 
-	 * @return    JSONArray containing the fields of the embed from its index.
+	 * @return			JSONArray containing the fields of the embed from its index.
 	 */
 	public JSONArray GetFields()
 	{
@@ -697,7 +772,7 @@ methodmap Embed < JSONObject
 	/**
 	 * Retrieve a field of the embed.
 	 * 
-	 * @return    Field corresponding to the input index. null if an error occurs.
+	 * @return			Field corresponding to the input index. null if an error occurs.
 	 */
 	public EmbedField GetField(int index)
 	{
@@ -710,10 +785,10 @@ methodmap Embed < JSONObject
 	}
 
 	/**
-	 * Add a field to the embed.
+	 * Add a field to the embed. This will delete the field.
 	 * 
-	 * @param field   			Field to add to the embed.
-	 * @return        			The number of fields after the new one was added. -1 otherwise.
+	 * @param field					Field to add to the embed.
+	 * @return							The number of fields after the new one was added. -1 otherwise.
 	 */
 	public int AddField(EmbedField field)
 	{
@@ -730,6 +805,7 @@ methodmap Embed < JSONObject
 		{
 			if(this.Set("fields", fields))
 			{
+				delete field;
 				return fields.Length;
 			}
 		}
@@ -740,18 +816,25 @@ methodmap Embed < JSONObject
 
 methodmap Webhook < JSONObject
 {
-	public Webhook() 
+	/**
+	 * Constructor for the Embed methodmap.
+	 * 
+	 * @param content			Content of the webhook.
+	 * @return						Returns the Embed.
+	 */
+	public Webhook(const char[] content="") 
 	{
 		JSONObject jsonObject = new JSONObject();
+		jsonObject.SetString("content", content);
 		return view_as<Webhook>(jsonObject);
 	}
 
 	/**
 	 * Retrieve the content of the webhook.
 	 * 
-	 * @param buffer        String buffer to store value.
-	 * @param maxlength     Maximum length of the string buffer.
-	 * @return              True on success. False otherwise.
+	 * @param buffer				String buffer to store value.
+	 * @param maxlength			Maximum length of the string buffer.
+	 * @return							True on success. False otherwise.
 	 */
 	public bool GetContent(char[] buffer, int maxlength)
 	{
@@ -761,8 +844,8 @@ methodmap Webhook < JSONObject
 	/**
 	 * Set the content of the webhook.
 	 * 
-	 * @param content   		Content of the webhook.
-	 * @return        			True on success. False otherwise.
+	 * @param content				Content of the webhook.
+	 * @return							True on success. False otherwise.
 	 */
 	public bool SetContent(const char[] content)
 	{
@@ -772,9 +855,9 @@ methodmap Webhook < JSONObject
 	/**
 	 * Retrieve the username of the webhook.
 	 * 
-	 * @param buffer        String buffer to store value.
-	 * @param maxlength     Maximum length of the string buffer.
-	 * @return              True on success. False otherwise.
+	 * @param buffer				String buffer to store value.
+	 * @param maxlength			Maximum length of the string buffer.
+	 * @return							True on success. False otherwise.
 	 */
 	public bool GetUsername(char[] buffer, int maxlength)
 	{
@@ -784,8 +867,8 @@ methodmap Webhook < JSONObject
 	/**
 	 * Set the username of the webhook.
 	 * 
-	 * @param username   		Username of the webhook.
-	 * @return        			True on success. False otherwise.
+	 * @param username			Username of the webhook.
+	 * @return							True on success. False otherwise.
 	 */
 	public bool SetUsername(const char[] username)
 	{
@@ -795,9 +878,9 @@ methodmap Webhook < JSONObject
 	/**
 	 * Retrieve the avatar_url of the webhook.
 	 * 
-	 * @param buffer        String buffer to store value.
-	 * @param maxlength     Maximum length of the string buffer.
-	 * @return              True on success. False otherwise.
+	 * @param buffer				String buffer to store value.
+	 * @param maxlength			Maximum length of the string buffer.
+	 * @return							True on success. False otherwise.
 	 */
 	public bool GetAvatarURL(char[] buffer, int maxlength)
 	{
@@ -807,8 +890,8 @@ methodmap Webhook < JSONObject
 	/**
 	 * Set the avatar URL of the webhook.
 	 * 
-	 * @param avatar_url   	Avatar URL of the webhook.
-	 * @return        			True on success. False otherwise.
+	 * @param avatar_url		Avatar URL of the webhook.
+	 * @return							True on success. False otherwise.
 	 */
 	public bool SetAvatarURL(const char[] avatar_url)
 	{
@@ -816,9 +899,9 @@ methodmap Webhook < JSONObject
 	}
 
 	/**
-	 * Retrieve the tts parameter of the webhook.
+	 * Retrieve the tts @parameter of the webhook.
 	 * 
-	 * @return    Bool representing the tts parameter of the webhook.
+	 * @return		Bool representing the tts @parameter of the webhook.
 	 */
 	public bool GetTTS()
 	{
@@ -826,10 +909,10 @@ methodmap Webhook < JSONObject
 	}
 
 	/**
-	 * Set the tts parameter of the webhook.
+	 * Set the tts @parameter of the webhook.
 	 * 
-	 * @param tts   		TTS parameter of the webhook.
-	 * @return        	True on success. False otherwise.
+	 * @param tts				TTS @parameter of the webhook.
+	 * @return					True on success. False otherwise.
 	 */
 	public bool SetTTS(bool tts)
 	{
@@ -839,7 +922,7 @@ methodmap Webhook < JSONObject
 	/**
 	 * Retrieve the embeds of the webhook.
 	 * 
-	 * @return    JSONArray containing the embeds of the webhook.
+	 * @return			JSONArray containing the embeds of the webhook.
 	 */
 	public JSONArray GetEmbeds()
 	{
@@ -849,7 +932,7 @@ methodmap Webhook < JSONObject
 	/**
 	 * Retrieve an embed of the webook from its index.
 	 * 
-	 * @return    Embed corresponding to the input index. null if an error occurs.
+	 * @return			Embed corresponding to the input index. null if an error occurs.
 	 */
 	public Embed GetEmbed(int index)
 	{
@@ -862,10 +945,10 @@ methodmap Webhook < JSONObject
 	}
 
 	/**
-	 * Add an embed to the webhook.
+	 * Add an embed to the webhook. This will delete the handle to the embed.
 	 * 
-	 * @param embed   			Embed to add to the webhook.
-	 * @return        			The number of embeds after the new one was added. -1 otherwise.
+	 * @param embed					Embed to add to the webhook.
+	 * @return							The number of embeds after the new one was added. -1 otherwise.
 	 */
 	public int AddEmbed(Embed embed)
 	{
@@ -882,6 +965,7 @@ methodmap Webhook < JSONObject
 		{
 			if(this.Set("embeds", embeds))
 			{
+				delete embed;
 				return embeds.Length;
 			}
 		}
@@ -891,12 +975,16 @@ methodmap Webhook < JSONObject
 	/**
 	 * Execute the webhook
 	 * 
-	 * @param webhook      URL of the webhook.
-	 * @param callback     Callback function called when the HTTP request has been processed.
-	 * @param data         Optional value to pass to the callback function.
+	 * @param webhook				URL of the webhook.
+	 * @param callback			Callback function called when the HTTP request has been processed.
+	 * @param data					Optional value to pass to the callback function.
 	 */
 	public void Execute(const char[] webhook, HTTPRequestCallback callback, any data = 0)
 	{
+		char sFile[PLATFORM_MAX_PATH + 1];
+		BuildPath(Path_SM, sFile, sizeof(sFile), "data/request.json");
+		view_as<JSON>(this).ToFile(sFile);
+		
 		HTTPRequest httpRequest = new HTTPRequest(webhook);
 		httpRequest.Post(view_as<JSON>(this), callback, data);
 		return;
