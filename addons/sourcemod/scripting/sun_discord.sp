@@ -107,7 +107,7 @@ public void OnWebHookExecuted(HTTPResponse response, any data)
 {
     if (response.Status != HTTPStatus_NoContent)
     {
-        LogError("An error has occured while sending the webhook.");
+        LogError("An error has occured while sending the webhook. Error Code: %d", response.Status);
         return;
     }
 }
