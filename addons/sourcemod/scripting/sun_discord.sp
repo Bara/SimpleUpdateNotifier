@@ -103,7 +103,7 @@ public void SUN_OnUpdate(int iLocalVersion, int iSteamVersion)
     webhook.Execute(sHook, OnWebHookExecuted);
 }
 
-public void OnWebHookExecuted(HTTPResponse response, DataPack pack)
+public void OnWebHookExecuted(HTTPResponse response, any data)
 {
     if (response.Status != HTTPStatus_NoContent)
     {
