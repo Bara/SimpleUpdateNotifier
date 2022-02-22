@@ -97,6 +97,7 @@ public void SUN_OnUpdate(int iLocalVersion, int iSteamVersion)
     
     embed.AddField(eServerVersion);
     embed.AddField(eValveVersion);
+    webhook.AddEmbed(embed);
 
     char sHook[256];
     Core.Webhook.GetString(sHook, sizeof(sHook));
