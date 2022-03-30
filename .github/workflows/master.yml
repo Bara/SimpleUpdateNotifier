@@ -12,26 +12,28 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        sm_version: ["1.10", "1.11"]
-
+        SM_VERSION: [ "1.10", "1.11" ]
 
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
+
+      - name: Set environment variables
+        run: |
+          echo "SCRIPTING_PATH=addons/sourcemod/scripting" >> $GITHUB_ENV
 
       - name: Setup SourcePawn Compiler ${{ matrix.SM_VERSION }}
         uses: rumblefrog/setup-sp@master
         with:
           version: ${{ matrix.SM_VERSION }}
 
-      - name: Compile sun.sp
+      - name: Compile plugins
         run: |
-          echo -e "\nCompiling sun.sp..."
-          spcomp -E -w234 -O2 -v2 -i addons/sourcemod/scripting/include addons/sourcemod/scripting/sun.sp
-
-      - name: Compile sun_discord.sp
-        run: |
-          echo -e "\nCompiling sun_discord.sp..."
-          spcomp -E -w234 -O2 -v2 -i addons/sourcemod/scripting/include addons/sourcemod/scripting/sun_discord.sp
+          for file in sun*.sp
+          do
+            echo -e "\nCompiling $file..."
+            spcomp -E -w234 -O2 -v2 -i $includePath -i include $file
+          done
+        working-directory: ${{ env.SCRIPTING_PATH }}
 
       - name: Create archive
         uses: actions/upload-artifact@v2
