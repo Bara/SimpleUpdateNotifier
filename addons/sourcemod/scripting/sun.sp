@@ -28,8 +28,15 @@ enum struct Global
     ConVar Recheck;
 
     Handle Timer;
+    Handle ReTimer;
 
     GlobalForward OnUpdate;
+
+    void ResetTimer()
+    {
+        this.Timer = null;
+        this.ReTimer = null;
+    }
 }
 
 Global Core;
@@ -76,20 +83,32 @@ public void OnPluginStart()
 
 public void OnConfigsExecuted()
 {
+    Core.ResetTimer();
+    
     if (GetServerVersion())
     {
         StartTimer();
     }
     else
     {
-        CreateTimer(Core.Recheck.FloatValue, Timer_ReCheck, _, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
+        Core.ReTimer = CreateTimer(Core.Recheck.FloatValue, Timer_ReCheck, _, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
     }
 
     Core.MaxVisible = FindConVar("sv_visiblemaxplayers");
 }
 
+public void OnMapEnd()
+{
+    Core.ResetTimer();
+}
+
 public Action Timer_CheckVersion(Handle timer)
 {
+    if (Core.Timer == null)
+    {
+        return Plugin_Stop;
+    }
+
     if (Core.Debug.BoolValue)
     {
         LogMessage("Timer_CheckVersion called");
