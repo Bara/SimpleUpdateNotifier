@@ -159,7 +159,7 @@ public void OnHTTPResponse(HTTPResponse response, any value)
 
     if (!jObj.GetBool("success"))
     {
-        SetFailState("Valve API sends success->false");
+        LogError("Steam Web API, CSGO Services or other service is unavailable.");
         delete jObj;
         return;
     }
