@@ -22,10 +22,14 @@ enum struct Global
     ConVar RestartMessage;
     ConVar RestartPlayers;
     ConVar RestartPercent;
+    ConVar RestartMethod;
     ConVar Delay;
     ConVar MaxVisible;
     ConVar AppId;
     ConVar Recheck;
+    ConVar RequestUrl;
+    ConVar RequestServerId;
+    ConVar RequestApiKey;
 
     Handle Timer;
     Handle ReTimer;
@@ -74,9 +78,13 @@ public void OnPluginStart()
     Core.RestartMessage = AutoExecConfig_CreateConVar("sun_restart_message", "0", "Print message when restart is planned? sun_restart must be 1", _, true, 0.0, true, 1.0);
     Core.RestartPlayers = AutoExecConfig_CreateConVar("sun_restart_players", "-1", "Restart the server with a amount of X players or less. (-1 to disable this feature)", _, true, -1.0);
     Core.RestartPercent = AutoExecConfig_CreateConVar("sun_restart_percent", "0", "Restart the server with a amount of X% players or less. (0 to disable this feature)", _, true, 0.0);
+    Core.RestartMethod = AutoExecConfig_CreateConVar("sun_restart_method", "0", "Restart server with the following methodes: 0 - Command (_restart) or 1 - POST Request (for Pterodactyl as example)", _, true, 0.0, true, 1.0);
     Core.Delay = AutoExecConfig_CreateConVar("sun_delay", "5.0", "After how much seconds restart the server?", _, true, 0.0);
     Core.AppId = AutoExecConfig_CreateConVar("sun_appid", "730", "Set the appid of your server. 730 as example for CSGO Server");
     Core.Recheck = AutoExecConfig_CreateConVar("sun_recheck", "1.0", "After getting false version the delay between next version check");
+    Core.RequestUrl = AutoExecConfig_CreateConVar("sun_request_url", "", "Set the url of your API");
+    Core.RequestServerId = AutoExecConfig_CreateConVar("sun_request_serverid", "", "For pterodactyl it is required to specific the serverid. Use <ServerId> in your url (sun_request_url)");
+    Core.RequestApiKey = AutoExecConfig_CreateConVar("sun_request_apikey", "", "Set the API key to get access to your API");
     AutoExecConfig_ExecuteFile();
     AutoExecConfig_CleanFile();
 }
@@ -144,8 +152,8 @@ void GetValveVersion()
     char sEndpoint[256];
     FormatEx(sEndpoint, sizeof(sEndpoint), "http://api.steampowered.com/ISteamApps/UpToDateCheck/v0001/?appid=%d&version=%d&format=json", Core.AppId.IntValue, Core.ServerVersion);
 
-    HTTPRequest request = new HTTPRequest(sEndpoint);
-    request.Get(OnHTTPResponse);
+    HTTPRequest hRequest = new HTTPRequest(sEndpoint);
+    hRequest.Get(OnHTTPResponse);
 }
 
 public void OnHTTPResponse(HTTPResponse response, any value)
@@ -189,6 +197,11 @@ bool GetServerVersion()
 
     if (strlen(sBuffer) < 31)
     {
+        if (Core.Debug.BoolValue)
+        {
+            LogMessage("strlen error (length: %d)", strlen(sBuffer));
+        }
+
         return false;
     }
 
@@ -196,6 +209,11 @@ bool GetServerVersion()
 
     if (regex.Match(sBuffer) != 2)
     {
+        if (Core.Debug.BoolValue)
+        {
+            LogMessage("Regex error");
+        }
+
         delete regex;
         return false;
     }
@@ -346,7 +364,14 @@ bool CheckPercent()
 
 public Action Timer_RestartServer(Handle timer)
 {
-    ServerCommand("_restart");
+    if (Core.RestartMethod.IntValue == 0)
+    {
+        ServerCommand("_restart");
+    }
+    else if (Core.RestartMethod.IntValue == 1)
+    {
+        PostRequest();
+    }
 
     return Plugin_Stop;
 }
@@ -365,4 +390,59 @@ void StartTimer()
     }
     
     Core.Timer = CreateTimer(Core.Interval.FloatValue, Timer_CheckVersion, _, TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
+}
+
+void PostRequest()
+{
+    char sUrl[2048];
+    Core.RequestUrl.GetString(sUrl, sizeof(sUrl));
+
+    if (strlen(sUrl) < 2)
+    {
+        SetFailState("[PostRequest] sun_request_url is not set.");
+        return;
+    }
+
+    HTTPRequest hRequest = new HTTPRequest(sUrl);
+
+    char sApiKey[2048];
+    Core.RequestApiKey.GetString(sApiKey, sizeof(sApiKey));
+
+    if (strlen(sApiKey) < 2)
+    {
+        SetFailState("[PostRequest] sun_request_apikey is not set.");
+        return;
+    }
+
+    char sBuffer[128];
+    FormatEx(sBuffer, sizeof(sBuffer), "Bearer %s", sApiKey);
+    hRequest.SetHeader("Authorization", sBuffer);
+
+    char sServerId[2048];
+    Core.RequestServerId.GetString(sServerId, sizeof(sServerId));
+    ReplaceString(sUrl, sizeof(sUrl), "<ServerId>", sServerId);
+
+    if (Core.Debug.BoolValue)
+    {
+        LogMessage(sUrl);
+    }
+
+    JSONObject obj = new JSONObject();
+    obj.SetString("signal", "power");
+
+    hRequest.Post(obj, OnPostRequest);
+}
+
+public void OnPostRequest(HTTPResponse response, any value, const char[] error)
+{
+    if (response.Status != HTTPStatus_Created)
+    {
+        LogError("[OnPostRequest] Error while sending post requet to the API. Status Code: %d, Error: %s", response.Status, error);
+        return;
+    }
+
+    if (Core.Debug.BoolValue)
+    {
+        LogMessage("[OnPostRequest] Success. Status Code: %d", response.Status);
+    }
 }
