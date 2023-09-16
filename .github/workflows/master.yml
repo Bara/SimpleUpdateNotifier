@@ -36,7 +36,7 @@ jobs:
         working-directory: ${{ env.SCRIPTING_PATH }}
 
       - name: Create archive
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: SUN.SM${{ matrix.SM_VERSION }}
           path: ./
